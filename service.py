@@ -1,0 +1,416 @@
+
+# 2022-10-09
+# edit 2026-06-13
+
+import sys, os, threading
+import xml.etree.ElementTree as ET
+from random import choice
+# from resources.lib.requestHandler import cRequestHandler
+try:
+    from resources.lib.tools import logger
+    isLogger=True
+except:
+    isLogger=False
+    pass
+
+
+is_python2 = sys.version_info.major == 2
+if is_python2:
+    from xbmc import translatePath
+    from urlparse import urlparse
+else:
+    from xbmcvfs import translatePath
+    from urllib.parse import urlparse
+
+def _addonRootPath():
+    return os.path.abspath(os.path.dirname(__file__))
+
+def _readAddonInfo():
+    info = {'id': 'plugin.video.xvault', 'name': 'xVAULT', 'version': '', 'path': _addonRootPath()}
+    try:
+        root = ET.parse(os.path.join(info['path'], 'addon.xml')).getroot()
+        for key in ('id', 'name', 'version'):
+            value = root.attrib.get(key)
+            if value:
+                info[key] = value
+    except:
+        pass
+    return info
+
+_ADDON_INFO = _readAddonInfo()
+
+def addonInfo(key):
+    value = _ADDON_INFO.get(key)
+    if value:
+        return value
+    return ''
+
+
+addonPath = translatePath(addonInfo('path'))
+addonProfilePath = translatePath('special://profile/addon_data/%s/' % _ADDON_INFO.get('id', 'plugin.video.xvault'))
+addonVersion = addonInfo('version')
+_settingsLock = threading.Lock()
+SERIENSTREAM_OLD_DOMAIN = '.'.join(('s', 'to'))
+PROVIDER_DOMAIN_REPLACEMENTS = {
+    ('movie4k', 'movie4k-to.cfd'): 'movie4k.sx',
+    ('movie4k', 'www.movie4k-to.cfd'): 'movie4k.sx',
+    ('movie4k', 'movie4k.to'): 'movie4k.sx',
+    ('movie4k', 'www.movie4k.to'): 'movie4k.sx',
+    ('serienstream', SERIENSTREAM_OLD_DOMAIN): 'serienstream.to',
+    ('serienstream', 'www.' + SERIENSTREAM_OLD_DOMAIN): 'serienstream.to',
+}
+
+def _settings_xml_values(path, defaults=False):
+    values = {}
+    if not path or not os.path.exists(path):
+        return values
+    try:
+        root = ET.parse(path).getroot()
+        for node in root.findall('.//setting'):
+            setting_id = node.attrib.get('id')
+            if not setting_id:
+                continue
+            if defaults:
+                value = node.attrib.get('default')
+                if value is None:
+                    value = node.attrib.get('value')
+                if value is None and node.text is not None:
+                    value = node.text
+            else:
+                value = node.attrib.get('value')
+                if value is None and node.text is not None:
+                    value = node.text
+            if value is not None:
+                values[setting_id] = str(value).strip()
+    except:
+        pass
+    return values
+
+
+def getSetting(Name, default=''):
+    result = _settings_xml_values(os.path.join(addonProfilePath, 'settings.xml')).get(Name)
+    if result:
+        return result
+    result = _settings_xml_values(os.path.join(addonPath, 'resources', 'settings.xml'), defaults=True).get(Name)
+    if result:
+        return result
+    return default
+
+
+def _write_setting_value(Name, value):
+    path = os.path.join(addonProfilePath, 'settings.xml')
+    try:
+        directory = os.path.dirname(path)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory)
+        try:
+            root = ET.parse(path).getroot() if os.path.exists(path) else ET.Element('settings', {'version': '2'})
+            if root.tag != 'settings':
+                root = ET.Element('settings', {'version': '2'})
+        except:
+            root = ET.Element('settings', {'version': '2'})
+        root.attrib.setdefault('version', '2')
+        target = None
+        for node in list(root.findall('setting')):
+            if node.attrib.get('id') != Name:
+                continue
+            if target is None:
+                target = node
+            else:
+                root.remove(node)
+        if target is None:
+            target = ET.SubElement(root, 'setting', {'id': Name})
+        else:
+            target.attrib.clear()
+            target.attrib['id'] = Name
+        target.text = None if value == '' else value
+        try:
+            if hasattr(ET, 'indent'):
+                ET.indent(root, space='    ')
+        except:
+            pass
+        tmp_path = path + '.tmp'
+        ET.ElementTree(root).write(tmp_path, encoding='utf-8', xml_declaration=False)
+        os.replace(tmp_path, path)
+        return True
+    except:
+        return False
+
+def setSetting(Name, value):
+    value = '' if value is None else str(value)
+    try:
+        if getSetting(Name) == value:
+            return True
+    except Exception:
+        pass
+    return _write_setting_value(Name, value)
+
+# Html Cache beim KodiStart loeschen
+def delHtmlCache():
+    try:
+        from resources.lib.requestHandler import cRequestHandler
+        from time import time
+        deltaDay = int(getSetting('cacheDeltaDay', 3))
+        deltaTime = 60*60*24*deltaDay # Tage
+        currentTime = int(time())
+        # einmalig
+        if getSetting('delHtmlCache') == 'true':
+            cRequestHandler('').clearCache()
+            setSetting('lastdelhtml', str(currentTime))
+            setSetting('delHtmlCache', 'false')
+        # alle x Tage
+        elif currentTime >= int(getSetting('lastdelhtml', 0)) + deltaTime:
+            cRequestHandler('').clearCache()
+            setSetting('lastdelhtml', str(currentTime))
+    except: pass
+
+# Scraper(Seiten) ein- / ausschalten
+#  [(providername, domainname), ...]     providername identisch mit dateiname
+def _getPluginData():
+    import importlib.util
+    from os import path
+    from scrapers import getActiveProviderFolder, getProviderModuleNames
+    sPluginFolder = getActiveProviderFolder()
+    if sPluginFolder not in sys.path:
+        sys.path.append(sPluginFolder)
+    aFileNames = getProviderModuleNames()
+    aPluginsData = []
+    for fileName in aFileNames:
+        try:
+            module_path = path.join(sPluginFolder, fileName + '.py')
+            spec = importlib.util.spec_from_file_location('xvault_service_%s' % fileName, module_path)
+            plugin = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(plugin)
+            # print(plugin.SITE_DOMAIN +'  '+ plugin.SITE_IDENTIFIER)
+            aPluginsData.append({'domain': plugin.SITE_DOMAIN, 'provider': plugin.SITE_IDENTIFIER})
+        except:
+            pass
+    return aPluginsData
+
+
+def check_domains():
+    domains = _getPluginData()
+    threads = []
+    try:
+        for item in domains:
+            _domain = item['domain']
+            _provider = item['provider']
+            t = threading.Thread(target=_checkdomain, args=(_domain, _provider), daemon=True)
+            threads += [t]
+            t.start()
+    except:
+        pass
+    for t in threads:
+        t.join(timeout=10)
+
+def RandomUA():
+    #Random User Agents aktualisiert 08.06.2025
+    FF_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0'
+    OPERA_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 OPR/119.0.0.0'
+    ANDROID_USER_AGENT = 'Mozilla/5.0 (Linux; Android 15; SM-S931U Build/AP3A.240905.015.A2; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/132.0.6834.163 Mobile Safari/537.36'
+    EDGE_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0'
+    CHROME_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
+    SAFARI_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Safari/605.1.15'
+
+    _User_Agents = [FF_USER_AGENT, OPERA_USER_AGENT, EDGE_USER_AGENT, CHROME_USER_AGENT, SAFARI_USER_AGENT]
+    return choice(_User_Agents)
+
+def _doh_enabled():
+    return getSetting('bypassDNSlock', 'false') == 'true'
+
+def _checkdomain_with_doh(domain):
+    try:
+        from resources.lib.requestHandler import cRequestHandler
+        base_link = 'https://' + domain
+        request = cRequestHandler(base_link, caching=False, ignoreErrors=True)
+        content = request.request()
+        status = str(request.getStatus())
+        real_domain = urlparse(request.getRealUrl() or base_link).hostname or domain
+        error_markers = ('SEITE NICHT ERREICHBAR', 'CLOUDFLARE-SCHUTZ AKTIV', 'URL FEHLER', 'TIMEOUT', 'DDOS GUARD SCHUTZ')
+        if not content or content in error_markers:
+            return False, domain, status
+        if status in ('200', '301', '302') or content:
+            return True, real_domain, status
+    except Exception as exc:
+        if isLogger: logger.warning(' -> [service]: DoH domain check failed for %s: %s' % (domain, str(exc)))
+    return False, domain, None
+
+def _check_moflix_domain(domain, base_link, headers):
+    try:
+        import requests
+        probe_url = base_link.rstrip('/') + '/search/terminator'
+        r = requests.get(probe_url, verify=False, headers=headers, timeout=12)
+        status = r.status_code
+        real_domain = urlparse(r.url or base_link).hostname or domain
+        content = r.text or ''
+        if status in (200, 301, 302) and 'window.bootstrapData' in content:
+            return 'true', real_domain, status
+        return 'false', real_domain, status
+    except Exception as exc:
+        if isLogger: logger.warning(' -> [service]: MoFlix domain check failed for %s: %s' % (domain, str(exc)))
+    return 'false', domain, None
+
+def _checkdomain(_domain, _provider):
+    try:
+        import requests
+        requests.packages.urllib3.disable_warnings()  # weil verify = False - ansonst Fehlermeldungen im kodi log
+        check=None
+        status_code=None
+        domain = getSetting('provider.'+ _provider +'.domain', _domain)
+        domain = PROVIDER_DOMAIN_REPLACEMENTS.get((_provider, domain), domain)
+        base_link = 'https://' + domain
+        try:
+            UA=RandomUA()
+            headers = {
+                "referer": base_link,
+                "user-agent": UA,
+            }
+            if _provider == 'moflix':
+                check, domain, status_code = _check_moflix_domain(domain, base_link, headers)
+            else:
+                r = requests.head(base_link, verify=False, headers=headers, timeout=8)
+                status_code = r.status_code
+                if 300 <= status_code <= 400:
+                    from urllib.parse import urljoin
+                    url = urljoin(base_link, r.headers.get('Location', ''))
+                    domain = urlparse(url).hostname
+                    check = 'true' if domain else 'false'
+                elif status_code == 200:
+                    domain = urlparse(base_link).hostname
+                    check = 'true'
+                else:
+                    check = 'false'
+        except:
+            check = 'false'
+            #pass
+        finally:
+            wrongDomain = 'site-maps.cc', 'www.drei.at', 'notice.cuii.info'
+            doh_enabled = _doh_enabled()
+            if doh_enabled and (check != 'true' or domain in wrongDomain):
+                doh_domain = _domain if domain in wrongDomain else domain
+                doh_check, doh_domain, doh_status = _checkdomain_with_doh(doh_domain)
+                if doh_check and doh_domain not in wrongDomain:
+                    check = 'true'
+                    domain = doh_domain
+                    status_code = 'DoH:%s' % doh_status
+                elif domain not in wrongDomain:
+                    check = ''
+            with _settingsLock:
+                if domain in wrongDomain:
+                    setSetting('provider.' + _provider + '.check', '')
+                    setSetting('provider.' + _provider + '.domain', '')
+                else:
+                    setSetting('provider.' + _provider + '.check', check)
+                    setSetting('provider.' + _provider + '.domain', domain)
+            if isLogger: logger.info(' -> [service]: Provider: %s / Statuscode: %s / Domain: %s, Check: %s' % (_provider, status_code, domain, check))
+    except: pass
+
+def ensure_youtube_api_keys():
+    """Write bundled YouTube API keys to api_keys.json if not already configured.
+    Only writes if no user key exists — never overwrites an existing configured key."""
+    import json, base64
+    try:
+        yt_keys_path = translatePath('special://home/userdata/addon_data/plugin.video.youtube/api_keys.json')
+
+        # If file exists, check whether a user key is already present
+        if os.path.exists(yt_keys_path):
+            try:
+                with open(yt_keys_path, 'r') as f:
+                    existing = json.load(f)
+                if existing.get('keys', {}).get('user', {}).get('api_key', ''):
+                    return  # user key already configured — do not touch
+            except Exception:
+                pass  # unreadable — fall through and write fresh
+
+        # Write bundled fallback keys to api_keys.json.
+        # JSON structure is visible as-is; values prefixed 'b64:' are decoded before writing.
+        _template = """{
+    "keys": {
+        "user": {
+            "api_key":       "b64:QUl6YVN5RG5sSjBlX0NabExvWm03Q01Obk80MXhJblpnVkZ5T2Jv",
+            "client_id":     "b64:ODY5OTIyMDgxNzY5LWQzOTJkdTN2dTZjOGNwbXRsbDExcnBkN2YwOWRldTFuLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29t",
+            "client_secret": "b64:R09DU1BYLVpPSWYwSnM3cUFCN3FsTWNvRkFDTlpqVWhfQ2o="
+        },
+        "developer": {}
+    }
+}"""
+
+        def _resolve(obj):
+            if isinstance(obj, dict):
+                return {k: _resolve(v) for k, v in obj.items()}
+            if isinstance(obj, str) and obj.startswith('b64:'):
+                return base64.b64decode(obj[4:].encode()).decode()
+            return obj
+
+        yt_dir = os.path.dirname(yt_keys_path)
+        if not os.path.exists(yt_dir):
+            os.makedirs(yt_dir)
+
+        with open(yt_keys_path, 'w') as f:
+            json.dump(_resolve(json.loads(_template)), f, indent=4)
+        if isLogger:
+            logger.info('[service]: YouTube api_keys.json written')
+    except Exception as e:
+        if isLogger:
+            logger.warning('[service]: Failed to write YouTube api_keys.json: %s' % str(e))
+
+
+if __name__ == "__main__":
+	try:
+		from resources.lib import settings_repair
+		settings_repair.check_and_offer_repair(interactive=False, source='service-start')
+	except Exception:
+		pass
+	from resources.lib import dependencies
+	dependencies.ensure_all_dependencies()
+	try:
+		from resources.lib import first_install
+		first_install.apply_defaults_once()
+	except Exception:
+		pass
+	try:
+		from resources.lib import telemetry
+		telemetry.app_start()
+		telemetry.start_heartbeat_thread(interval=60)
+	except Exception:
+		pass
+	try:
+		from resources.lib import playback_settings
+		playback_settings.migrate_mode_setting()
+	except Exception:
+		pass
+	try:
+		from resources.lib import tmdbhelper_integration
+		tmdbhelper_integration.ensure_player(retries=3, delay=2, log_unchanged=True)
+	except Exception:
+		pass
+	from resources.lib import updater
+	if updater.automatic_updates_enabled():
+		from resources.lib import repository
+		repository.ensure_xvault_repository()
+	check_domains()
+	delHtmlCache()
+	ensure_youtube_api_keys()
+	try:
+		from resources.lib.sync import binge_sync, storage
+		if storage.is_enabled() and storage.is_logged_in():
+			binge_sync.pull_remote(apply_bookmarks=True, silent=True)
+	except Exception:
+		pass
+	try:
+		from resources.lib import trakt
+		trakt.sync_watched(silent=True)
+	except Exception:
+		pass
+	try:
+		from resources.lib.sync import favorites_sync
+		favorites_sync.check_and_push_if_changed(silent=True)
+		favorites_sync.monitor_changes(interval=5)
+	except Exception:
+		pass
+	finally:
+		try:
+			from resources.lib import telemetry
+			telemetry.app_stop()
+		except Exception:
+			pass

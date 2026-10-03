@@ -1,0 +1,634 @@
+# Changelog
+
+## [Unreleased]
+
+## [2026.10.01.1] - 2026-10-01
+
+- Trakt-Watchlists nutzen bei temporaeren 5xx-Fehlern des Trakt-Sync-Endpunkts automatisch den funktionierenden Benutzer-Watchlist-Endpunkt als Fallback.
+- Trakt-Collections werden jetzt wie von der aktuellen Trakt-API erwartet mit `page` und `limit` paginiert geladen.
+- Live in Kodi bestaetigt: Trakt-Watchlist und Trakt-Collection unter Filme und Serien lassen sich ohne `Trakt Fehler` oeffnen.
+- Repository-Seite, Kodi-Index, Add-on-ZIP und Download-Archiv wurden auf 2026.10.01.1 aktualisiert.
+
+## [2026.09.30.2] - 2026-09-30
+
+- MoFlix wird nicht mehr wegen eines fehlgeschlagenen Start-Healthchecks uebersprungen; xVAULT prueft die funktionierende HTML-Suchseite und laedt MoFlix auch dann, wenn eine alte `provider.moflix.check=false`-Einstellung im Kodi-Profil steht.
+- Erfolgreiche MoFlix-Quellensuchen setzen den Provider-Status wieder auf verfuegbar, damit Nutzer nach dem Update nicht manuell in den Einstellungen aufraeumen muessen.
+- Live in Kodi bestaetigt: `Terminator` liefert wieder vier MoFlix-Quellen, und `MoFlix / Veev / Mirror 2` startet die Wiedergabe.
+- Repository-Seite, Kodi-Index, Add-on-ZIP und Download-Archiv wurden auf 2026.09.30.2 aktualisiert.
+
+## [2026.09.30.1] - 2026-09-30
+
+- MoFlix faellt bei Cloudflare-/HTTP-403-Antworten der JSON-API auf die Browser-Daten aus den HTML-Seiten zurueck, findet dadurch wieder die aktuellen Mirror-Links und loest FileLions/Mirror-2-HLS-Links robuster auf.
+- Repository-Seite, Kodi-Index, Add-on-ZIP und Download-Archiv wurden auf 2026.09.30.1 aktualisiert.
+
+## [2026.09.23.3] - 2026-09-23
+
+- ResolveURL-Mehrfachqualitaeten werden bei Streamauswahl und Autoplay automatisch aufgeloest, damit VOE-Quellen nicht an einem versteckten Qualitaetsdialog haengen bleiben.
+- Dood-Hosterlinks mit `/w/`-Pfad werden vor dem Resolver auf die von ResolveURL erwartete `/d/`-Form normalisiert.
+- VixSrc nutzt die aktuellen `vixsrc.to`-Embed- und Playlist-URLs inklusive vorhandener Playlist-Parameter; der Kodi-Livetest bestaetigt den OHA/VOE-Resolverpfad lokal.
+- Die Standarddomains fuer KinoGer und Streamcloud wurden auf `kinoger.fun` bzw. `streamcloud.date` aktualisiert.
+- Repository-Seite, Kodi-Index, Add-on-ZIP und Download-Archiv wurden auf 2026.09.23.3 aktualisiert.
+
+## [2026.09.23.2] - 2026-09-23
+
+- Film- und Serienquellen nutzen jetzt die OHA-VOD-Schnittstelle ueber `oha.to`, nachdem die bisherige `huhu.to`-VOD-Quelle nicht mehr erreichbar ist.
+- Die OHA-Quelle liefert Filme und Serien direkt ueber IMDb-IDs und erkennt die aktuellen OHA-Hoster wie VOE, Filemoon, Dood, Mixdrop, Supervideo und Vidsonic.
+- Die sichtbare Provider-Beschriftung wurde von Huhu auf OHA aktualisiert; interne Einstellungs-IDs bleiben fuer vorhandene Installationen kompatibel.
+- Repository-Seite, Kodi-Index, Add-on-ZIP und Download-Archiv wurden auf 2026.09.23.2 aktualisiert.
+
+## [2026.09.23.1] - 2026-09-23
+
+- LiveTV laedt die Senderliste jetzt ueber `oha.to` mit den aktuellen OHA-Ausweichdomains, nachdem `huhu.to` fuer die Live-TV-Liste nicht mehr erreichbar ist.
+- Alte LiveTV-Caches und Favoriten mit `huhu.to`-Abspielseiten werden automatisch auf `oha.to` normalisiert, damit vorhandene Eintraege wieder aufloesbar bleiben.
+- Der LiveTV-Resolve-Schritt nutzt OHA robuster und kann gueltige HLS-Streams auch dann starten, wenn der externe Signatur-Ping kein Token liefert.
+- Repository-Seite, Kodi-Index, Add-on-ZIP und Download-Archiv wurden auf 2026.09.23.1 aktualisiert.
+
+## [2026.09.13.1] - 2026-09-13
+
+- LiveTV-Senderlogos werden fuer die verfuegbaren DE/AT/CH-Sender ueber iptv-org-Sender-, Feed- und Alternativnamen robuster zugeordnet.
+- LiveTV lite reichert 2ix2- und Nydus-Senderlisten jetzt ebenfalls mit passenden Senderlogos an.
+- Repository-Seite, Kodi-Index, Add-on-ZIP und Download-Archiv wurden auf 2026.09.13.1 aktualisiert.
+
+## [2026.09.05.1] - 2026-09-05
+
+- LiveTV-Streamsegmentprüfung toleranter gemacht: xVAULT blockiert auf Fire TV, Android und vergleichbaren Systemen lauffähige HLS-Streams nicht mehr nur wegen unklarer Segment-Probe, sondern lässt Kodi bei nicht fatalen Prüfantworten entscheiden.
+- Die manuelle LiveTV-Senderprüfung blendet Sender bei unklarer Segmentprüfung nicht mehr fälschlich temporär aus; eindeutige HTTP-, DNS- und Verbindungsfehler bleiben weiter geschützt.
+- Listenpositions-Wiederherstellung beruhigt: xVAULT setzt den Fokus nach Staffelaufruf, Container-Refresh und Wiedergabeende nicht mehr mehrfach aggressiv, wenn Kodi die Zielposition bereits erreicht hat.
+
+## [2026.09.04.2] - 2026-09-04
+
+- Filme und TV-Serien können in den TMDb-Rubriken zusätzlich nach Streaming-Anbietern im deutschen Markt gefiltert werden; die Wiedergabe nutzt danach weiterhin die normale xVAULT-Quellen- und Resolverlogik.
+- Die Kodi-Add-on-Information wurde um eine klare Beschreibung mit offizieller Repository-Adresse ergänzt.
+
+## [2026.09.04.1] - 2026-09-04
+
+- MoFlix als neue Film- und Serienquelle ergänzt; xVAULT nutzt die JSON-Titelsuche, prüft Treffer über Titel, Jahr und IMDb-ID und sortiert unterstützte Spiegel stabil für ResolveURL.
+- Problematische direkte MoFlix-HLS-Links werden vor der Anzeige geprüft und verworfen, wenn Unter-Playlists nicht erreichbar sind, damit Kodi nicht an scheinbar gültigen Premium-Links hängen bleibt.
+
+## [2026.09.03.1] - 2026-09-03
+
+- Quelltext optimierung
+
+## [2026.08.30.1] - 2026-08-30
+
+- Kodi-Abstürze beim Öffnen von Serien-, Staffel- oder Episodenlisten auf macOS/tvOS behoben, indem xVAULT keine direkten Kodi-ControlList-Bindings mehr zur Positionswiederherstellung verwendet.
+- Die Listenposition wird nur noch defensiv über Kodis eigene Fokusfunktion gesetzt und übersprungen, wenn Kodi gerade Container, Busy-Dialoge oder Vollbildwiedergabe aktualisiert.
+- Die Rückkehr aus der Wiedergabe nutzt dieselbe abgesicherte Positionslogik, damit Kodi nach Stop oder regulärem Ende geöffnet bleibt.
+
+## [2026.08.29.5] - 2026-08-29
+
+- Kodi-Wrapper für Add-on, Fenster, Dialoge, Player, Playlists und Fortschrittsdialoge werden kontrolliert erzeugt und beim Add-on-Ende freigegeben, damit Kodi nach xVAULT-Aufrufen keine unnötigen CPythonInvoker-Cleanup-Warnungen protokolliert.
+- Die Serienqueue übergibt weiterhin eine echte Kodi-Playlist an den Player, während die übrigen Laufzeitobjekte nicht mehr dauerhaft als Modul-Globals gehalten werden.
+- Scraper erhalten die ResolveURL-Hosterliste aus den installierten ResolveURL-Plugin-Dateien; die eigentliche ResolveURL-Auflösung wird erst beim Start einer Quelle geladen und danach wieder aus dem xVAULT-Invoker gelöst.
+- Settings-Lesezugriffe nutzen Profil- und Default-XML mit Cache, damit aktuelle Kodi-Einstellungen sofort greifen und keine unnötigen Add-on-Wrapper entstehen.
+- Sync-Zustandsdateien werden bei kurz gesperrten Profil-Dateien mit Retry und Fallback geschrieben, damit Wiedergabeende und Synchronisation keine unnötigen Datei-Zugriffsfehler erzeugen.
+
+## [2026.08.29.4] - 2026-08-29
+
+- Filmpalast-Suche robuster gemacht: xVAULT wertet mehrere Suchseiten aus, erkennt Treffer über Titel, Attribute, Bildtexte und URL-Slugs und prüft erkannte Jahresangaben toleranter.
+- Filmo-Quellenauflösung stabilisiert: CSRF-Token, Session-Cookies, direkte Mint-Ziele sowie HTTP-/HTML-Redirects werden innerhalb der xVAULT-Requestlogik verarbeitet.
+- SerienStream und AniWorld gleichen Serien- und Episodentreffer genauer ab; Untertitelvarianten werden nicht mehr als deutsche oder englische Tonspur behandelt und in der Quellenliste nicht mehr als DE/EN gekennzeichnet.
+- Abweichende Serien-Staffelungen werden zuverlässiger abgefangen, indem Episodentitel zusätzlich über Kapitelnummern, deutsche/englische Titelvarianten und robuste Wortvergleiche geprüft werden.
+- Quellenlisten behalten ihre Scraper-Reihenfolge, entfernen Dubletten stabiler und wenden Hoster-Ausschlüsse erst nach Sprach- und Qualitätslogik an.
+- Resolver-Timeouts und fehlerhafte Hoster-Auflösungen sperren nur die betroffene Provider-/Hoster-Kombination kurzzeitig, damit erneute Quellenwechsel nicht wieder an derselben hängenden Quelle starten.
+- AnimeToast wurde als eigener Serien-Scraper ergänzt; xVAULT nutzt nur konkrete Episoden- oder Playerdaten und übernimmt keine unsicheren Staffelbereich-Container als Einzelfolge.
+- Internet Archive wurde als optionale Filmquelle ergänzt und streng auf passende Titel-/Jahr-Treffer mit echten Videodateien begrenzt.
+
+## [2026.08.29.3] - 2026-08-29
+
+- Filmpalast-Suche robuster gemacht: xVAULT wertet mehrere Suchseiten aus, erkennt Treffer über Titel, Attribute, Bildtexte und URL-Slugs und prüft erkannte Jahresangaben toleranter.
+- Filmo-Quellenauflösung stabilisiert: CSRF-Token, Session-Cookies, direkte Mint-Ziele sowie HTTP-/HTML-Redirects werden innerhalb der xVAULT-Requestlogik verarbeitet.
+- SerienStream und AniWorld gleichen Serien- und Episodentreffer genauer ab; Untertitelvarianten werden nicht mehr als deutsche oder englische Tonspur behandelt und in der Quellenliste nicht mehr als DE/EN gekennzeichnet.
+- Abweichende Serien-Staffelungen werden zuverlässiger abgefangen, indem Episodentitel zusätzlich über Kapitelnummern, deutsche/englische Titelvarianten und robuste Wortvergleiche geprüft werden.
+- Quellenlisten behalten ihre Scraper-Reihenfolge, entfernen Dubletten stabiler und wenden Hoster-Ausschlüsse erst nach Sprach- und Qualitätslogik an.
+
+## [2026.08.29.2] - 2026-08-29
+
+- Filmpalast-Suche robuster gemacht: xVAULT wertet mehrere Suchseiten aus, erkennt Treffer über Titel, Attribute, Bildtexte und URL-Slugs und prüft erkannte Jahresangaben toleranter.
+- Filmo-Quellenauflösung stabilisiert: CSRF-Token, Session-Cookies, direkte Mint-Ziele sowie HTTP-/HTML-Redirects werden innerhalb der xVAULT-Requestlogik verarbeitet.
+- SerienStream und AniWorld gleichen Serien- und Episodentreffer genauer ab; Untertitelvarianten werden nicht mehr als deutsche oder englische Tonspur behandelt.
+- Abweichende Serien-Staffelungen werden zuverlässiger abgefangen, indem Episodentitel zusätzlich über Kapitelnummern, deutsche/englische Titelvarianten und robuste Wortvergleiche geprüft werden.
+- Quellenlisten behalten ihre Scraper-Reihenfolge, entfernen Dubletten stabiler und wenden Hoster-Ausschlüsse erst nach Sprach- und Qualitätslogik an.
+
+## [2026.08.29.1] - 2026-08-29
+
+- BS.to wird im Indexseiten-Menü ausgeblendet und vom Scraper-Lader nicht mehr aktiviert.
+- SerienStream.to arbeitet ohne Zugangsdatenpflicht; fehlende Login-Daten brechen die Quellensuche nicht mehr ab.
+- Die SerienStream.to-Zugangsdateneingabe wurde aus den Anbieter-Logins ausgeblendet.
+
+## [2026.08.20.2] - 2026-08-20
+
+- TV-Seriensuche robuster gemacht: direkte TMDB-Suchergebnisse werden nicht mehr verworfen, nur weil die deutsche Inhaltsbeschreibung leer ist.
+- TMDB-Beschreibungen nutzen nun eine sinnvolle Fallback-Reihenfolge: deutsche Beschreibung, englische Beschreibung, originale TMDB-Übersicht.
+
+## [2026.08.20.1] - 2026-08-20
+
+- ResolveURL-Kompatibilität erweitert: xVAULT erkennt zusätzliche VOE-, Streamix-, Playmate- und FireStream-Ausweichdomains und kann sie lokal über vorhandene Resolver-Mechaniken vorbereiten, wenn die installierte ResolveURL-Version diese Domains noch nicht kennt.
+- FireStream-Quellen mit Bindestrich in der Medien-ID werden nicht mehr vorzeitig verworfen.
+- KinoGer-Spezialhosts werden gezielt dem passenden Resolver zugeordnet; `kinoger.be` wird als FileLions behandelt und bevorzugt echte HLS-Varianten vor problematischen Werbe-Playlists.
+- Der KinoGer-Scraper reicht betroffene Spezialhosts als normale Resolver-Quellen weiter, damit Dialog, Verzeichnis und Autoplay denselben robusteren Auflösungsweg nutzen.
+- Das Kodi-Busy-Overlay wird beim Wechsel von der Quellensuche in die Quellenliste gezielt geschlossen, damit die fertige Quellenliste nicht hinter einer weiterdrehenden Ladeanzeige verborgen bleibt.
+- Neue Hoster-Ausweichdomains werden in der Quellenanzeige mit stabilen, lesbaren Hoster-Namen dargestellt.
+
+## [2026.08.18.1] - 2026-08-18
+
+- Streamstart robuster gemacht: xVAULT prüft ausgewählte Streams vor dem Playerstart genauer und wechselt bei nicht startenden Quellen automatisch zu passenden Alternativen aus der Quellenliste.
+- Playback-Wartebildschirme werden bei Startfehlern oder hängender Wiedergabe sauber geschlossen, damit Kodi nicht dauerhaft im Ladezustand bleibt.
+- Rückkehr nach Serien- und Filmwiedergabe auf Android/Fire TV weiter stabilisiert, indem Container-Updates erst nach einem idle Zustand ausgeführt werden.
+- SerienStream-/s.to-Anbieterbilder werden nicht mehr als Kodi-Menügrafiken verwendet; xVAULT nutzt stattdessen TMDB-Bilder oder lokale xVAULT-Grafiken.
+
+## [2026.08.17.5] - 2026-08-17
+
+- Playback-Stabilität nach Wiedergabeende verbessert: xVAULT beendet nicht mehr benötigte Quellen- und Resolver-Worker vor dem Playerstart, damit Kodi nach Film- oder Episodenende nicht auf alte Hintergrundthreads warten muss.
+
+## [2026.08.17.4] - 2026-08-17
+
+- Wiedergabeende stabilisiert: xVAULT führt die Rückkehr zur vorherigen Ansicht nicht mehr direkt im Kodi-Player-Callback aus, sondern zeitlich entkoppelt nach dem Player-Abschluss.
+- Quellenlisten speichern den Wiedergabe-Kontext nun zusätzlich über einen kurzlebigen Quellen-Kontext, damit manuell ausgewählte Quellen mit den korrekten Film- oder Episodendaten gestartet werden.
+- Container-Aktualisierungen nach Serienwiedergabe laufen nur noch über geprüfte xVAULT-Pfade, damit ungültige oder fremde Containerpfade Kodi nicht verlassen lassen.
+
+## [2026.08.17.3] - 2026-08-17
+
+- Nach Stream-Ende oder manuellem Stop wird keine unsichere ParentDir-Navigation mehr ausgeführt. xVAULT kehrt stattdessen über den gespeicherten Containerpfad zur vorherigen Film- oder Folgenliste zurück, damit Kodi plattformübergreifend geöffnet bleibt.
+
+## [2026.08.17.2] - 2026-08-17
+
+- Sync-Registrierung prüft E-Mail-Adressen lokal auf plausibles Format und serverseitig auf eine erreichbare Domain mit DNS-/Mail-Einträgen.
+- Kodi-Settings werden nur noch geschrieben, wenn sich der Zielwert wirklich geändert hat; unnötige identische Schreibvorgänge werden übersprungen.
+- Auf iOS/tvOS wird nach Stream-Ende keine zusätzliche ParentDir-Navigation mehr ausgeführt, damit Kodi nach Stop oder regulärem Ende nicht versehentlich verlassen wird.
+
+## [2026.08.17.1] - 2026-08-17
+
+- Download-Einstellungen klarer getrennt: interne Downloads und externe Download-Manager werden getrennt bezeichnet, der fehlende Download-Hilfetext wurde ergänzt und Settings-Werte werden frischer aus Kodi gelesen.
+- Settings-Aktionen wie Download-Hilfe und Add-on-Einstellungen schließen Direktaufrufe sauber ab, damit Kodi keine unnötigen Pluginfehler protokolliert.
+- Favoriten-Synchronisation überträgt Änderungen revisionsbasiert als einzelne neue, geänderte oder gelöschte Favoriten statt bei jedem Abgleich den kompletten Bestand.
+- Code of Conduct für Issues, Pull Requests, Diskussionen und Projektkommunikation ergänzt.
+- Projektlizenz als GPL-3.0-only ergänzt und Drittanbieter-Hinweise dokumentiert.
+
+## [2026.08.11.2] - 2026-08-11
+
+- Quelltextoptimierung.
+
+## [2026.08.11.1] - 2026-08-11
+
+- Anbieter-Logins werden über xVAULT-eigene Eingabedialoge gespeichert, damit Benutzername und Passwort zuverlässig persistiert werden.
+- Anbieter-Zugangsdaten können pro Anbieter direkt gelöscht werden; Reset/Reparatur bewahrt gespeicherte Kontodaten.
+- Favoriten-Sync überschreibt lokale Kodi-Favoriten nicht mehr automatisch; abweichende Online-/Lokalstände werden einmalig per Hinweis gemeldet.
+- Sync-API speichert Favoriten pro Benutzer nur noch als aktuellen Serverstand statt als unbegrenzte Vollsnapshot-Historie.
+- ResolveURL-Folgeabhängigkeit pyqrcode wird beim Start mitgeprüft und bei Bedarf nachinstalliert.
+- Ungültige Stream- und Redirect-URLs ohne echte Domain werden vor ResolveURL verworfen.
+- Sync-Dateien werden mit eindeutigen temporären Dateinamen geschrieben, damit parallele Sync-Läufe sich nicht gegenseitig stören.
+- Sync-API-Endpunkte mit Verbindungsfehlern werden vorübergehend gebremst, damit Hintergrund-Sync nicht dieselben Serverfehler wiederholt.
+- VIXSTREAM bereitet bei verschlüsselten HLS-Streams eine lokale Playlist mit lokal abgelegtem AES-Key vor, wenn der Key mit den Stream-Headern erreichbar ist.
+
+## [2026.08.08.7] - 2026-08-08
+
+- Filmo als aktivierbare Filmquelle in die normale Quellensuche eingebunden.
+- Filmo-Suche, Filmseiten und Providerchips werden ausgewertet; Deutsch-/Englisch-Hoster werden über den Filmo-Mint-Endpunkt in echte Hoster-Weiterleitungen überführt.
+
+## [2026.08.08.6] - 2026-08-08
+
+- Neuer Hauptmenüpunkt Collections zeigt Filmreihen aus Filmo an, speichert die Übersichten 24 Stunden im Cache und sortiert enthaltene Filme chronologisch.
+- Collections werden mit TMDb-Filmreihen abgeglichen, damit Fremdtreffer wie falsche Batman- oder Alien-Zuordnungen aus der Detailansicht herausgefiltert werden.
+- Die Collections-Übersicht zeigt nur noch den Reihennamen ohne rohe Anbieter-Filmzahl.
+- AniWorld.to als optionaler Serienanbieter mit eigener Aktivierung und optionalen Zugangsdaten vorbereitet.
+
+## [2026.08.05.1] - 2026-08-05
+
+- Abhängigkeitsprüfung für webOS- und Android-Kodi gehärtet: optionale InputStream-Komponenten werden beim Pluginstart nicht mehr automatisch nachinstalliert.
+- Kodi-TV-/IPTV-Simple-Integration setzt nicht mehr FFmpeg Direct, InputStream Adaptive oder RTMP voraus und nutzt bei fehlenden Modulen Kodis interne HLS-Wiedergabe.
+- Film- und Serienstreams verweisen nur noch dann auf InputStream Adaptive, wenn das Modul auf der Kodi-Plattform wirklich aktiviert ist.
+- Supportinformationen zeigen zusätzlich den Status der optionalen InputStream- und PVR-Komponenten.
+
+## [2026.08.04.1] - 2026-08-04
+
+- Neuer TV-Serien-Menuepunkt zeigt Serien, deren Serienstart in Deutschland innerhalb der letzten 30 Tage liegt.
+- Trakt-Watchlist und Trakt-Collection fuer Serien werden nur angezeigt, wenn Trakt verbunden ist.
+- Serienlisten reagieren robuster auf leere oder unvollstaendige TMDB-Antworten.
+- SerienStream-Redirects werden sauberer aufgeloest; unspielbare interne Bridge-URLs werden verworfen.
+- Doodstream wird als geschuetzter Hoster markiert und nachrangig behandelt, damit Autoplay auf funktionierende Alternativen ausweichen kann.
+
+## [2026.08.02.2] - 2026-08-02
+
+- Beschädigte xVAULT-settings.xml wird beim Pluginstart erkannt; der Nutzer kann die Datei sichern und zurücksetzen lassen.
+- Neuer Reparaturpunkt unter Werkzeuge und Wartung & Support prüft die gespeicherten xVAULT-Einstellungen manuell.
+
+## [2026.08.02.1] - 2026-08-02
+
+- IPTV Simple wird beim xVAULT-Start und nach Updates nicht mehr automatisch installiert oder aktiviert.
+- Die Kodi-TV-Integration fragt vor Installation oder Aktivierung von IPTV Simple nach und respektiert bewusst deaktivierte PVR-Clients.
+- LiveTV schreibt M3U- und XMLTV-Dateien nur noch neu, wenn sich der Inhalt geändert hat, damit PVR-Clients nicht unnötig neu einlesen.
+
+## [2026.08.01.2] - 2026-08-01
+
+- Erststart robuster gemacht: Fehler in Bootstrap-Nebentasks blockieren den Aufbau des xVAULT-Root-Menues nicht mehr.
+- TMDbHelper-Integration repariert die xVAULT-Player-Datei jetzt selbst, legt fehlende Player-Ordner an und prueft den Zielstatus.
+- Die stabile TMDbHelper-Player-Datei nutzt einen eigenen Dateinamen, damit parallel installierte Alpha-/Testversionen sie nicht ueberschreiben.
+- Supportpakete enthalten nun den TMDbHelper-Status, xVAULT-Player-Dateistatus und relevante TMDbHelper-/xStream-Logzeilen.
+
+## [2026.08.01.1] - 2026-08-01
+
+- LiveTV bietet zusätzlich eine reine M3U/XMLTV-Erstellung an, ohne IPTV Simple automatisch zu installieren, zu aktivieren oder neu zu konfigurieren.
+
+## [2026.07.31.2] - 2026-07-31
+
+- Nutzungsstatistik ist standardmaessig aktiv und bleibt aktiv, solange der Nutzer sie nicht deaktiviert.
+- Eine bewusste Deaktivierung in den Einstellungen wird weiterhin respektiert.
+
+## [2026.07.31.1] - 2026-07-31
+
+- Einstellungsmenue neu strukturiert: Allgemein, Wiedergabe, Suche & Metadaten, Quellen & Scraper, Konten & Synchronisation, LiveTV, Downloads & Untertitel, Datenschutz & Statistik, Wartung & Support sowie Erweitert / Entwickler sind klarer getrennt.
+- Bestehende Setting-IDs bleiben erhalten, damit vorhandene Nutzerkonfigurationen weiterverwendet werden.
+
+## [2026.07.27.2] - 2026-07-27
+
+- VIXSTREAM prüft HLS-Audiospuren vor der Quellenanzeige und blendet falsch als Deutsch erkannte Vixcloud-Treffer aus, wenn Deutsch nur als Untertitel vorhanden ist.
+- Alte zwischengespeicherte Quellenlisten werden für diese Sprachprüfung automatisch ignoriert.
+
+## [2026.07.27.1] - 2026-07-27
+
+- Handbuch als GitHub-Pages-Wissensdatenbank erweitert: Menüs, Suche, Quellen, Wiedergabe, Sync, Trakt, LiveTV, Downloads, Werkzeuge, Einstellungen und Fehlerhilfe ausführlicher beschrieben.
+- Sichtbare GitHub-Pages-Texte und deutsch benannte Link-Events mit korrekten Umlauten vereinheitlicht.
+- Abhängigkeitsprüfung für direkte ZIP-Installationen stabilisiert: xVAULT installiert und aktiviert benötigte Laufzeitmodule nach dem ersten Start selbst.
+- Kodi-TV-Integration für LiveTV ergänzt: xVAULT erzeugt M3U- und XMLTV-Dateien und konfiguriert IPTV Simple automatisch, wenn das PVR-Modul verfügbar ist.
+- Handbuch um eine ausführliche Erststart-Anleitung für IPTV Simple erweitert.
+
+## [2026.07.26.1] - 2026-07-26
+
+- Weitere Quelltextoptimierung.
+
+## [2026.07.25.3] - 2026-07-25
+
+- LiveTV und LiveTV lite trennen TV-Favoriten klar von Kodis eigenen Favoriten; LiveTV lite besitzt jetzt einen eigenen Favoritenordner.
+
+## [2026.07.25.2] - 2026-07-25
+
+- Filme und Episoden gelten erst als gesehen, wenn höchstens noch zehn Minuten Restlaufzeit übrig sind oder die Wiedergabe regulär endet.
+- Angefangene Filme und Episoden bleiben ungesehen, zeigen in Listen ein Uhrsymbol und die Fortsetzen-Position hinter dem Titel.
+- Fortsetzen-Lesezeichen werden bei fertig gesehenen Titeln entfernt und bei laufenden Titeln beibehalten.
+
+## [2026.07.25.1] - 2026-07-25
+
+- Quellensuche für Filme und Serien beschleunigt: Quellenlisten werden persistent im Kodi-Profil zwischengespeichert, erfolgreiche Serienanbieter werden bevorzugt und temporär fehlerhafte Indexseiten kurzzeitig übersprungen.
+- Autoplay bereitet mehrere Quellen parallel vor, behält aber die bestehende Qualitäts-, Sprach- und Providerreihenfolge bei.
+- Die parallele Scraper-Ausführung passt sich besser an Windows, Linux und Android an.
+
+## [2026.07.23.3] - 2026-07-23
+
+- Quelltextoptimierung.
+
+## [2026.07.23.2] - 2026-07-23
+
+- Quelltextoptimierung.
+
+## [2026.07.23.1] - 2026-07-23
+
+- Quelltextoptimierung.
+
+## [2026.07.19.1] - 2026-07-19
+
+- Vixstream-Quellen über Vixcloud behalten die benötigten Manifest-Header jetzt auch im Kodi-Abspielpfad, damit Kodi die HLS-Playlist nicht mehr mit HTTP 403 ablehnt.
+
+## [2026.07.18.3] - 2026-07-18
+
+- weitere Quelltextverbesserung.
+
+## [2026.07.18.2] - 2026-07-18
+
+- weitere Quelltextverbesserung.
+
+## [2026.07.17.9] - 2026-07-17
+
+- Die Standard-Aktion nutzt in den Kodi-Einstellungen kein Kodi-Enum/Labelenum-Dropdown mehr, sondern einen xVAULT-eigenen Auswahl-Dialog und speichert den Wert in einer eigenen Profildatei.
+- Vorhandene Werte aus `hosts.mode.v3`, `hosts.mode.v2`, `hosts.mode` und `default.action` werden weiterhin einmalig übernommen, danach können alte Kodi-Defaultwerte den Wechsel nicht mehr zurückschreiben.
+- Die Kodi-Settings-Action ruft den xVAULT-Auswahldialog mit gequoteter Plugin-URL auf, damit der Wechsel auch aus Kodis Einstellungsdialog zuverlässig ausgeführt wird.
+- Der Fire-TV/Kodi-Test prüft jetzt die xVAULT-Profildatei, den v2/v3-Updatepfad und den Wechsel zurück auf `Autoplay` nach gesetztem Migrationsmarker.
+
+## [2026.07.17.8] - 2026-07-17
+
+- Die Standard-Aktion nutzt in laufendem Kodi wieder den Live-Wert aus der Add-on-API, damit ein Wechsel zwischen `Dialog`, `Verzeichnis` und `Autoplay` sofort uebernommen wird.
+- Die Einstellung nutzt eine neue Kodi-Label-Enum-ID mit `Dialog`/`Verzeichnis`/`Autoplay`; alte numerische `hosts.mode`/`default.action`-Werte bleiben als Legacy-Quelle erhalten und werden beim Start migriert.
+- Der Fire-TV/Kodi-Test prueft den Standard-Aktionswechsel jetzt explizit gegen stale/default-markierte Profil-Dateien und alte `default.action`-Werte.
+
+## [2026.07.17.7] - 2026-07-17
+
+- Die Standard-Aktion `Dialog`/`Verzeichnis`/`Autoplay` liest wieder den tatsaechlich gespeicherten Profilwert und faellt nicht mehr durch den Kodi-Default auf `Autoplay` zurueck.
+- Vorhandene alte Standard-Aktionswerte werden nach `hosts.mode` migriert; die Erstinstallation ueberschreibt vorhandene Profilwerte nicht mehr mit `Autoplay`.
+- Provider-Checks auf Fire TV/Android speichern bei aktivem DNS over HTTPS fehlgeschlagene direkte Service-Checks nicht mehr als harte Deaktivierung, damit DoH-faehige Indexseiten aktiv bleiben.
+
+## [2026.07.17.6] - 2026-07-17
+
+- Add-on-Laufzeitcode auf den finalen Stand `2026.07.17.2` zurueckgesetzt und als neue Version veroeffentlicht.
+- Diese Version ersetzt die spaeteren Aenderungen aus `2026.07.17.3` bis `2026.07.17.5`, um den stabileren Stand fuer Fire-TV-Tests wieder bereitzustellen.
+
+## [2026.07.17.5] - 2026-07-17
+
+- Staffellisten grosser Serien wie Murdoch Mysteries werden auf Fire TV/Android schlanker aufgebaut, damit Kodi beim Scrollen nicht durch schwere TV-Show-InfoTags, Cast-Bilder oder leere Streamdetails belastet wird.
+- Staffel-Metadaten werden nur noch begrenzt parallel geladen und nach der Gesehen-Status-Pruefung ohne Episodenlisten im Staffelcache gehalten; die Staffelliste nutzt einen allgemeinen Videocontent statt `tvshows`.
+
+## [2026.07.17.3] - 2026-07-17
+
+- Kodi-Wrapper-Objekte wie Dialoge, Fenster, Player, Playlists und Addon-Handles werden nicht mehr als langlebige Modul-Globals gehalten, damit CPythonInvoker-Cleanup-Warnungen nach xVAULT-Aufrufen vermieden werden.
+- Progress-Dialoge werden verwaltet freigegeben und beim Add-on-Ende bereinigt; Serienqueue nutzt lokale Player-/Playlist-Objekte fuer die Kodi-Uebergabe.
+- Der Kodi-Service ist von `control.py`/`xbmcaddon` entkoppelt und liest Provider-Konstanten direkt aus den Dateien, damit Service-Starts ohne CPythonInvoker-Addon-Klassenreste enden.
+
+## [2026.07.17.2] - 2026-07-17
+
+- Supportfunktion fuer redigierte Diagnosepakete hinzugefuegt: Kodi-/Addon-Kontext, relevante Abhaengigkeiten, redigierte Einstellungen, xVAULT-bezogene Logzeilen sowie Dateilisten werden automatisch gesammelt und als UUID-ZIP gepackt.
+- Supportpakete werden erst nach Nutzerbestaetigung zu `filebin.net` hochgeladen, erhalten eine kurze Service-ID ueber `da.gd` und das lokale ZIP wird nach dem Upload geloescht.
+- Sync-API um Telemetry-Tabellen und einen unauthentifizierten, datensparsam gefilterten Telemetry-Endpunkt erweitert; Installations- und Sitzungs-IDs werden serverseitig gehasht.
+
+## [2026.07.17.1] - 2026-07-17
+
+- Scraper erhalten die aktuelle ResolveURL-Hosterliste, damit Quellen von FHDFilme, HDfilme, Megakino, StreamCloud, TopStreamFilm und aehnlichen Anbietern nicht mehr vorzeitig ausgefiltert werden.
+- Die Standard-Aktion `Verzeichnis` liefert Quellenlisten auch bei RPC-, Favoriten- und externen Aufrufen wieder als Kodi-Verzeichnis statt in den Dialog zurueckzufallen.
+- VIXSTREAM-Playlist-Streams ohne `.m3u8`-Endung werden als HLS erkannt und mit gemeinsamen InputStream-Adaptive-Headern abgespielt, damit Manifest, Segmente und AES-Schluessel erreichbar bleiben.
+
+## [2026.07.14.3] - 2026-07-14
+
+- xVAULT-Synchronisation nutzt den neuen API-Host `xvault-sql.ddnss.de` und den neuen Datenbankspace fuer Favoriten und Binge-/Wiedergabestaende.
+- Sync-API auf dem neuen Space bereitgestellt; Status, Registrierung, Favoriten-/Binge-Sync und Pull wurden gegen die neue Datenbank getestet.
+- Sync-Client verwendet fuer den neuen Host zuerst den erreichbaren HTTP-Endpunkt, damit fehlendes HTTPS nicht vor jedem Sync zu Wartezeiten fuehrt.
+
+## [2026.07.14.2] - 2026-07-14
+
+- Lokale Pickle-Speicher schreiben Daten jetzt per atomischem Dateiersatz mit kurzem Retry bei Windows-Dateisperren, damit abgebrochene Schreibvorgaenge bei vollem Speicher oder OneDrive-Locks die bestehende Datei nicht beschaedigen.
+- Autoplay und Streamauswahl brechen haengende Resolver- oder Player-Starts jetzt mit Timeout ab, versuchen bei Autoplay weitere Quellen und beenden den Wiedergabe-Waechter auch dann, wenn Kodi keinen Stop-Callback liefert.
+- Zuletzt gefundene Quellenlisten fuer Filme und Serien werden kurz zwischengespeichert, damit ein Quellenwechsel nicht erneut alle Indexseiten abfragen muss.
+- DNS over HTTPS nutzt eine neue Einstellungs-ID und ist dadurch auch bei bestehenden Profilen standardmaessig aktiv, bleibt danach aber ueber die allgemeinen Einstellungen abschaltbar.
+- Die Standard-Aktion wird beim Start von Filmen und Folgen frisch aus Kodis aktuellem Add-on-Setting gelesen und nutzt die Profil-Datei nur als Rueckfall, damit Aenderungen aus dem Kodi-Settingsdialog sofort fuer die naechste Wiedergabe gelten.
+- Die Standard-Aktion nutzt wieder Kodis native Enum-Speicherung und migriert alte Textwerte bei jedem Plugin-Aufruf, damit Aenderungen aus Add-on-Settings in aktiven Favoriten- und Folgenlisten wirklich gespeichert werden.
+
+## [2026.07.14.1] - 2026-07-14
+
+- Trakt-Anmeldung nutzt jetzt Device-Code-OAuth: xVAULT zeigt einen Geraetecode an, der unter trakt.tv/activate freigegeben wird.
+- Trakt-Zugangsdaten werden robust im xVAULT-Profil gespeichert; Token-Refresh bleibt auch dann stabil, wenn Kodi Settings leere Werte zurueckliefern.
+- Trakt-Status, Watchlist, Collection, Gesehen-Import, Alias-Suche, Token-Refresh sowie die Schreib-Payloads fuer History, Scrobbling und Bewertungen wurden lokal und in Kodi geprueft.
+
+## [2026.07.06.1] - 2026-07-06
+
+- Filmpalast-Suchpfade werden nicht mehr doppelt kodiert, damit Titel mit Leerzeichen und Umlauten wieder Treffer liefern.
+- Filmpalast nutzt die bestehende RequestHandler-Logik mit unveraendert kodierten URLs und wertet VOE-HD-Links aus der aktuellen Streamstruktur wieder aus.
+
+## [2026.07.05.5] - 2026-07-05
+
+- LiveTV lite bleibt auch bei temporaer nicht erreichbarer 2ix2-API nutzbar und liest dann Nydus als Ersatzquelle.
+- Nydus-Sender werden nach Deutsche TV, Österreichische TV und Schweizer TV einsortiert; echte HLS-Streams werden beim Start aus dem Nydus-Player dynamisch aufgeloest.
+- Browser-only- oder Cloudflare-Embed-Ziele aus Nydus werden nicht als defekter Kodi-Stream gestartet, sondern mit Hinweis abgefangen.
+
+## [2026.07.05.4] - 2026-07-05
+
+- Zuletzt gefundene Quellenlisten fuer Filme und Serien werden fuer die aktuelle Kodi-Sitzung kurz zwischengespeichert, damit ein erneuter Quellenwechsel nicht sofort wieder alle Indexseiten abfragt.
+- Der Quellen-Cache ist auf wenige Eintraege und 15 Minuten begrenzt und beruecksichtigt Titel, Folge, Sprache, Qualitaet, Sortierung, Limit und aktivierte Provider.
+- Hoster-Links werden weiterhin frisch aufgeloest und getestet; der Cache speichert nur die bereits gesammelte Quellenliste.
+- Der Wiedergabe-Waechter prueft den Fortschritt erst, wenn Kodi eine gueltige Gesamtlaufzeit meldet.
+- Das GitHub-Pages-Downloadarchiv wird auf die aktuelle Version plus zwei Vorversionen begrenzt, damit Deployments stabil kleiner bleiben.
+
+## [2026.07.05.3] - 2026-07-05
+
+- Serienwiedergaben brechen nicht mehr vor dem Kodi-Player-Start ab, wenn die Metadaten nur `imdb_id` statt `imdbnumber` enthalten.
+- Player-InfoLabels werden robuster aus vorhandenen Metadaten aufgebaut, damit Favoriten, alte Listen und Android/Kodi-Varianten keine fehlenden Pflichtfelder erzwingen.
+- Startfehler im Player werden jetzt im Kodi-Log als Playback-Startfehler protokolliert, statt still verschluckt zu werden.
+- VOE-Quellen werden bei Bedarf direkt in xVAULT auf einen abspielbaren MP4/HLS-Link aufgeloest, auch wenn ResolveURL die aktuelle VOE-Ausweichdomain noch nicht kennt.
+- Hoster-Seiten, die ResolveURL nicht zu einem echten Direktstream aufloesen kann, werden nicht mehr an Kodi als Video uebergeben.
+- Lokale Cookie-Laufzeitdaten werden beim Release-Build nicht mehr in das Add-on-ZIP aufgenommen.
+- Das GitHub-Pages-Downloadarchiv wird auf die aktuelle Version plus die letzten 10 Vorversionen begrenzt, damit die Repo-Page zuverlässig deployed.
+
+## [2026.07.05.2] - 2026-07-05
+
+- SerienStream nutzt als feste Domain `serienstream.to`.
+- Alte lokal gespeicherte SerienStream-Domainwerte werden beim Providercheck und beim Scraperstart automatisch auf `serienstream.to` migriert.
+- Der SerienStream-DoH-Fallback wurde auf die neue Domain und die passende aktuelle Fallback-IP umgestellt.
+- Bei Serien mit gleichem Veröffentlichungsdatum mehrerer Folgen hat der Episodentitel jetzt Vorrang; Datums-Fallbacks werden nur noch genutzt, wenn sie eindeutig sind.
+
+## [2026.07.05.1] - 2026-07-05
+
+- SerienStream prueft bei Serienfolgen mit abweichender Anbieter-Staffelzaehlung den Episodentitel und die Erstausstrahlung, statt nur die direkte SxxExx-Nummer blind zu uebernehmen.
+- Folgen wie `Chilling Adventures of Sabrina` S1E12 werden dadurch auf die passende Anbieter-Staffel und Anbieter-Folge gemappt, wenn TMDB/xVAULT und Anbieter die Staffeln unterschiedlich schneiden.
+- Direkt gefundene Anbieterfolgen werden bei vorhandenem Episodentitel validiert, damit Quellen nicht auf eine falsche Folge zeigen.
+
+## [2026.07.04.7] - 2026-07-04
+
+- `Jetzt synchronisieren` bricht nicht mehr mit PluginError ab, wenn lokale Bookmark-Daten doppelte oder beschädigte Fortsetzen-Einträge enthalten.
+- Der Bookmark-Speicher bereinigt doppelte Einträge beim Speichern und Entfernen und findet Fortsetzen-Einträge auch dann wieder, wenn sie nicht an erster Stelle stehen.
+- Die manuelle Synchronisation gleicht den Login-Zustand vor dem Start ab und meldet unerwartete lokale Sync-Fehler sauber statt mit Python-Traceback.
+
+## [2026.07.04.6] - 2026-07-04
+
+- Die Einstellung `Standard-Aktion` verwendet im Kodi-Settingsdialog stabile Textwerte statt anfaelliger numerischer Enum-Werte.
+- Alte Profile mit `0`, `1` oder `2` werden weiter verstanden und beim Start auf `Dialog`, `Verzeichnis` oder `Autoplay` migriert.
+- `Dialog` bleibt dadurch auch dann gespeichert, wenn die Add-on-Einstellungen aus einer aktiven Folgen- oder Quellenliste heraus geoeffnet werden.
+
+## [2026.07.04.5] - 2026-07-04
+
+- Film- und Serienstarts verwenden die aktuelle Einstellung `Standard-Aktion` wieder als fuehrende Auswahl.
+- Alte Favoriten oder externe Wiedergabe-Links mit gespeichertem Autoplay-Wert koennen `Dialog` oder `Verzeichnis` nicht mehr ueberstimmen.
+- Neue externe Wiedergabe-Links speichern die Standard-Aktion nicht mehr fest in den Medien-Metadaten.
+
+## [2026.07.04.4] - 2026-07-04
+
+- Die xVAULT-Synchronisation verwendet die lokale Auth-Datei jetzt als fuehrende Login-Quelle, wenn Kodi-Settings und Auth-Datei auseinanderlaufen.
+- Veraltete Sync-API-Keys in den Kodi-Settings werden automatisch mit der Auth-Datei abgeglichen.
+- Server-Backups von Favoriten koennen dadurch wiederhergestellt werden, ohne faelschlich mit `Nicht angemeldet` abgewiesen zu werden.
+- Der Sync-API-Client versucht bei `UNAUTHORIZED` einen weiteren gespeicherten Key, falls Kodi noch einen abweichenden Key in den Settings haelt.
+
+## [2026.07.04.3] - 2026-07-04
+
+- Neuer Einstellungsbereich `Indexseiten 3 (DE)` fuer CINE.TO, FILMFANS, NOX, SERIENFANS und STREAMCLOUD.FORUM.
+- Neue lokale Scraper fuer CINE.TO, FILMFANS, NOX, SERIENFANS und STREAMCLOUD.FORUM wurden eingebunden.
+- STREAMCLOUD.FORUM kann Filme und Serien ueber die Such- und Playerstruktur auswerten und blendet interne Hilfslinks ohne abspielbaren Medienbezug aus.
+- Der bisherige Einstellungsbereich `Indexseiten (DE)` heisst nun `Indexseiten 1 (DE)`.
+- Movie4k wurde auf die aktuelle API-Struktur ueber `movie4k.sx` umgestellt; alte gespeicherte Movie4k-Domains werden beim Providercheck automatisch migriert.
+- Die DoH-Logik wurde fuer die aktiven Indexseiten vereinheitlicht, sodass Seitenabrufe bei aktivierter Option ueber den xVAULT-RequestHandler mit Cloudflare-DoH laufen.
+- BS.to und SerienStream nutzen direkte Session-Requests nur noch als Rueckfall, wenn DNS over HTTPS deaktiviert ist.
+
+## [2026.07.04.2] - 2026-07-04
+
+- DNS over HTTPS kann in den allgemeinen Einstellungen aktiviert oder deaktiviert werden.
+- xVAULT nutzt bei aktivierter Option Cloudflare DNS over HTTPS fuer HTTP-Anfragen, ohne die urspruengliche Domain im Request zu ersetzen.
+- SerienStream/serienstream.to nutzt ebenfalls den neuen DoH-Weg; die bekannte feste SerienStream-IP wird nur noch als Rueckfall verwendet, wenn Cloudflare-DoH keine nutzbare Verbindung liefert.
+- Der Provider-Domaincheck beim Kodi-Start prueft bei aktivem DoH blockierte oder fehlgeschlagene Domains ein zweites Mal ueber den xVAULT-RequestHandler, damit Quellen nicht vorzeitig deaktiviert werden.
+
+## [2026.07.04.1] - 2026-07-04
+
+- Serien pruefen nun auch TMDB-Staffel 0 und zeigen vorhandene Specials oder Pilotfilme als eigenen Eintrag in der Staffelliste an.
+- Specials werden in der Episodenliste als `Special 01` statt als `0x01` dargestellt.
+- Staffel-0-Folgen bleiben beim Abspielen echte Serienfolgen und werden nicht mehr als Filme an die Scraper uebergeben.
+- SerienStream, BS.to und Vixstream koennen Staffel-0-Folgen jetzt gezielt als Serien-Specials behandeln.
+- Fehlende Ausstrahlungsdaten bei Staffeln oder Folgen blenden Eintraege nicht mehr versehentlich aus.
+
+## [2026.07.03.4] - 2026-07-03
+
+- SerienStream findet Sonderfolgen nun ueber Staffel 0, wenn die normale Serienfolge auf serienstream.to nicht vorhanden ist und der Episodentitel zur Special-Folge passt.
+- Episodentitel und Episoden-Erstausstrahlung werden an die Quellen-Scraper weitergereicht, damit Anbieter-Sonderfaelle gezielter erkannt werden koennen.
+- Vixstream speichert keine kurzlebigen Embed-Links mehr in der Quellenliste, sondern loest sie frisch beim Abspielen auf.
+- Filmpalast akzeptiert bei Serien nur noch Treffer mit passender SxxEyy-Kennung und nimmt S01E10 nicht mehr als Ersatz fuer S01E11.
+
+## [2026.07.03.3] - 2026-07-03
+
+- Nach Film- oder Episodenende konkurrieren automatischer Listenrefresh, Serien-Positionslogik und Positionswiederherstellung nicht mehr miteinander.
+- Serienlisten mit aktivierter Option `Status - Bei Serien die erste ungesehene Folge auswählen` setzen die Auswahl nun selbst; der Player stellt in diesem Fall nicht zusaetzlich die alte Episode wieder her.
+- Der doppelte Listenreload bei Serien wurde entfernt, damit Kodi nach Playback-Ende nicht zweimal hintereinander die Folgenliste neu aufbaut.
+- Handbuch um BS.to-Hinweise, Erstinstallationsvorgaben, Filmpalast-Verhalten sowie Konto-, Kennwort- und Synchronisationsaktionen ergaenzt.
+
+## [2026.07.03.2] - 2026-07-03
+
+- LiveTV-Senderlisten bieten eine Funktion, mit der alle aktuell sichtbaren Sender auf erreichbare Streams geprueft werden koennen.
+- Vor Start der LiveTV-Senderpruefung warnt xVAULT vor einer moeglichen Laufzeit von bis zu 30 Minuten und weist darauf hin, dass der Vorgang fuer schwache Systeme nicht empfohlen wird.
+- Nach Abschluss der LiveTV-Senderpruefung zeigt xVAULT in einem Ergebnisdialog an, wie viele Sender geprueft wurden, wie viele funktionieren und wie viele temporaer gesperrt wurden.
+- Nicht erreichbare LiveTV-Sender werden nach der Pruefung temporaer bis zum naechsten xVAULT-Hauptstart ausgeblendet.
+- Die LiveTV-Senderpruefung zeigt waehrend des Laufs Status und Fortschritt an und kann ueber den Kodi-Fortschrittsdialog abgebrochen werden.
+- GitHub-Pages-Unterseite `handbuch/` als umfassende xVAULT-Wissensdatenbank ergaenzt.
+- Startseite der GitHub Page verlinkt das neue Handbuch mit Umami-Event.
+- README-Hinweise zu Handbuch und Umami-Einbindung aktualisiert.
+
+## [2026.07.03.1] - 2026-07-03
+
+- Vorbereitete LiveTV-Senderlisten-Pruefung mit Fortschrittsdialog, Warnhinweis und temporaerer Ausblendung nicht erreichbarer Sender.
+
+## [2026.07.02.4] - 2026-07-02
+
+- Neuer Hauptmenuepunkt `LiveTV lite` direkt nach `LiveTV` ergaenzt.
+- LiveTV lite liest Deutsche TV, Österreichische TV und Schweizer TV aus der 2ix2-WordPress-API, extrahiert die JWPlayer-HLS-Streams und spielt sie mit der bestehenden xVAULT-HLS-Konfiguration ab.
+- Nicht erreichbare 2ix2-HLS-Manifeste werden vor dem Kodi-Start abgefangen, damit tote Quellen keinen Playback-Fehler ausloesen.
+
+## [2026.07.02.3] - 2026-07-02
+
+- LiveTV bestaetigt HLS-Kandidaten vor der Kodi-Uebergabe in zwei weiteren kurzen Pruefrunden, damit flappende Sender mit wechselnden HTTP-500-Segmenten nicht in einem haengenden Player landen.
+- Leere oder nicht auswertbare HLS-Manifeste werden jetzt explizit blockiert, statt als scheinbar brauchbarer Stream durchzurutschen.
+
+## [2026.07.02.2] - 2026-07-02
+
+- LiveTV startet HLS-Sender nur noch, wenn das neueste Segment erreichbar ist; defekte Live-Rand-Segmente fuehren nun zum Ersatzstream statt zum Kodi-Playback-Fehler.
+- Signierte HLS-Manifest-URLs werden ohne Kodi-MIME-Query gestartet, damit Anbieter die URL nicht wegen zusaetzlicher Parameter ablehnen.
+
+## [2026.07.02.1] - 2026-07-02
+
+- LiveTV prueft vor dem Start mehrere aktuelle HLS-Segmente statt nur das letzte Segment der Playlist.
+- Fehlerhafte Range-Requests werden mit einem normalen Segmentabruf gegengeprueft, damit brauchbare Streams nicht faelschlich blockiert werden.
+- Bei instabilen Sendern nutzt xVAULT automatisch eng passende Ersatzstreams wie HD+ oder Backup-Varianten, ohne auf fremde Sender zu wechseln.
+
+## [2026.06.30.9] - 2026-06-30
+
+- Filmpalast erkennt die aktuelle Suchergebnis- und Streamlink-Struktur wieder.
+- Filmpalast nutzt fuer Such- und Detailseiten eine eigene HTTPS-Anfrage, damit `%20`-Suchpfade in Kodi nicht doppelt kodiert werden.
+- Filmpalast-Quellen werden nicht mehr vorzeitig durch ResolveURL gefiltert, damit gueltige Hoster in der Quellenliste sichtbar bleiben.
+- Parser- und Kodi-RPC-Test gegen Over Your Dead Body (2026), The Greatest Showman und Shrek 2 - Der tollkuehne Held kehrt zurueck erfolgreich durchgefuehrt.
+
+## [2026.06.30.8] - 2026-06-30
+
+- Frische Erstinstallationen setzen einmalig die Streamsprache auf Deutsch und die Standard-Aktion auf Autoplay.
+- Bestehende Profile und spaetere Updates behalten ihre gewaehlten Wiedergabe-Einstellungen; die Erstinstallationsvorgabe wird dort nicht erneut erzwungen.
+
+## [2026.06.30.7] - 2026-06-30
+
+- LiveTV ordnet FC-Bayern-Sender jetzt der Kategorie Sport statt Regional zu.
+- LiveTV berechnet Kategorien auch beim Laden eines vorhandenen Senderlisten-Caches neu, damit Korrekturen ohne manuellen Refresh greifen.
+
+## [2026.06.30.6] - 2026-06-30
+
+- BS.to zeigt nur noch Quellen an, die ohne reCAPTCHA-Anforderung erkannt werden.
+- CAPTCHA-geschuetzte BS.to-Quellen werden vor der Quellenliste ausgefiltert und nicht automatisiert umgangen.
+- Der optionale BS.to-Login bleibt freiwillig; ohne Zugangsdaten wird weiterhin nach frei verfuegbaren Quellen gesucht.
+
+## [2026.06.30.5] - 2026-06-30
+
+- Optionaler Serien-Scraper fuer BS.to im xVAULT-Provider-System ergaenzt.
+- Serienliste, Staffel-/Episodenlinks, Deutsch/Englisch/Deutsch-Sub-Sprachen und Hoster werden aus der aktuellen BS.to-Seitenstruktur gelesen.
+- Optionaler BS.to-Login in den Konten-Einstellungen ergaenzt; CAPTCHA-geschuetzte Hoster werden markiert und nicht automatisiert umgangen.
+
+## [2026.06.30.4] - 2026-06-30
+
+- Kinox erkennt die neue Suchseiten-Struktur und uebernimmt Deutsch, Englisch sowie Deutsch/Englisch als echte Stream-Sprachen.
+- Kinokiste, KKiste und Movie2k verwenden browsernahe API-Header, robuste Watch-URL-Fallbacks und uebernehmen die Sprache aus der Watch-Antwort.
+- VixStream reicht die bevorzugte Sprache bis in Embed- und Playlist-URL weiter; Huhu ist als mehrsprachiger Scraper markiert.
+- Movie2k2 verhindert breite Fallback-Falschtreffer wie Resident Alien zu Resident Evil.
+- Ignorierte RequestHandler-Fehler erzeugen keine Kodi-Error-Logs mehr; SerienStream wertet Fehler-Sentinel beim Login nicht mehr als erfolgreichen Login.
+- Die neue Projektregel verlangt nach Plugin-Aenderungen einen Kodi-Test per JSON-RPC.
+
+## [2026.06.30.3] - 2026-06-30
+
+- SerienStream liest jetzt alle Sprachvarianten einer Episode ein, statt nur deutsche Links zu uebernehmen.
+- Bei Resident Alien S01E01 werden bei Sprache `Alle` nun deutsche, englische und Ger-Sub-Quellen angezeigt.
+- Die zentrale Sprachzuordnung priorisiert explizite Scraper-Sprachangaben vor Zusatzinfos, damit `Ger-Sub` nicht faelschlich als `MULTI` markiert wird.
+- Fix lokal in Kodi 21.3 per JSON-RPC gegen Resident Alien S01E01 getestet.
+
+## [2026.06.30.2] - 2026-06-30
+
+- Autoplay wird fuer Filme und Serien automatisch verhindert, wenn die bevorzugte Stream-Sprache auf `Alle` steht.
+- Bei Sprache `Alle` fragt xVAULT einmal nach `Dialog` oder `Verzeichnis` und speichert diese Auswahl als neue Standard-Aktion.
+- Autoplay bleibt fuer `Deutsch`, `Englisch` und `Mehrsprachig` weiterhin nutzbar.
+
+## [2026.06.30.1] - 2026-06-30
+
+- Film- und Serienquellen koennen jetzt nach bevorzugter Stream-Sprache sortiert oder strikt gefiltert werden.
+- Wiedergabe-Einstellungen um bevorzugte Stream-Sprache, Sprachfilter-Modus, unbekannte Sprache und Mehrsprachig-erlauben Optionen ergaenzt.
+- Streamlisten zeigen die erkannte Sprache mit `DE`, `EN`, `MULTI` oder `?` direkt in der Quellenzeile an; LiveTV bleibt unveraendert deutsch.
+
+## [2026.06.29.8] - 2026-06-29
+
+- LiveTV-HLS startet jetzt plattformneutral ueber eine neue Wiedergabe-Engine-Auswahl: automatisch, Kodi intern, FFmpeg Direct oder InputStream Adaptive.
+- Der automatische Modus bevorzugt FFmpeg Direct, wenn es auf der Kodi-Plattform installiert und aktiviert ist, und faellt sonst auf Kodis interne HLS-Wiedergabe zurueck.
+- xVAULT prueft vor dem Start eines HLS-LiveTV-Streams Manifest und aktuelles Segment und loest defekte oder nicht erreichbare Streams einmal neu auf, damit Kodi nicht in einen nativen Crashpfad laeuft.
+
+## [2026.06.29.7] - 2026-06-29
+
+- LiveTV-Einstellungen um eine Puffergroesse in MB ergaenzt; 0 MB laesst den Kodi-Standard unveraendert.
+- Beim Start eines LiveTV-Streams setzt xVAULT die Kodi-Dateicachegroesse auf den gewaehlten Wert und aktiviert Netzwerkstream-Pufferung.
+
+## [2026.06.29.6] - 2026-06-29
+
+- LiveTV-Senderlisten zeigen im Infofeld des markierten Senders jetzt `Aktuell` und `Gleich` aus dem EPG.
+- Senderlogos werden als Poster/Thumb/Icon gesetzt, damit im Infofenster links oben das passende Senderlogo erscheint.
+- Fehlende Senderlogos werden ueber lokale Alias-Zuordnung und einen gecachten Logo-Fallback ergaenzt.
+
+## [2026.06.29.5] - 2026-06-29
+
+- LiveTV zeigt vor dem Streamstart die aktuell laufende Sendung aus einem lokalen XMLTV-EPG-Cache an.
+- EPG-Daten werden mit deutschem Kanal-Mapping lokal zwischengespeichert und auf LiveTV-Sendernamen wie RTL 2, 3sat, 13th Street oder Das Erste abgeglichen.
+- LiveTV-Einstellungen um EPG an/aus, EPG-Dialog und EPG-Cachezeit ergaenzt.
+
+## [2026.06.29.4] - 2026-06-29
+
+- LiveTV-Refresh beendet den Kodi-Directory-Aufruf jetzt sauber, damit beim Aktualisieren der Senderliste kein `GetDirectory`-Fehler im Kodi-Log entsteht.
+- Live-Test in Kodi 21.3 mit lokaler Installation durchgefuehrt: Senderliste geladen und ein HLS-Sender erfolgreich gestartet.
+
+## [2026.06.29.3] - 2026-06-29
+
+- LiveTV als eigenstaendiges xVAULT-Modul neu integriert.
+- Deutsche Sender werden ueber `huhu.to` geladen, lokal gecacht, kategorisiert und erst beim Abspielen aufgeloest.
+- LiveTV-Menue mit Kategorien, Suche, Favoriten, Refresh-Aktion und eigenen Einstellungen ergaenzt.
+- Historische Texte und GitHub-Page-Hinweise neutralisiert, damit keine alten Quellnamen mehr in den veroeffentlichten Dateien auftauchen.
+
+## [2026.06.29.2] - 2026-06-29
+
+- Einstellung `Automatische Updates aktivieren` im Bereich Allgemein ergaenzt; Standard ist aktiviert.
+- Interner Update-Check und automatisches Repository-Bootstrap respektieren die neue Einstellung.
+- README, Changelog, Add-on-Metadaten und GitHub Page auf Version `2026.06.29.2` aktualisiert.
+
+## [2026.06.29.1] - 2026-06-29
+
+- Alter LiveTV-/Livestream-Bereich vollstaendig aus Menue, Routing, Einstellungen, Daten und Repository-Playlisten entfernt.
+- Eingebettete Altmodule und zugehoerige Senderdaten entfernt.
+- README, DEPENDENCIES.md, Add-on-Metadaten und GitHub Page auf Filme/Serien abgeglichen.
+- Umami Analytics auf allen GitHub-Pages-HTML-Seiten mit Do-Not-Track, ausgeschlossenen URL-Suchparametern und Link-Events ergaenzt.
+- GitHub-Page-Bereich `Neu in` wird beim Build automatisch aus `CHANGELOG.txt` aktualisiert.
+
+## [2026.06.28.10] - 2026-06-28
+
+- Umami-Tracking-Script im Head der GitHub Page ergaenzt.
+- Umami-Pixel auf der GitHub Page ergaenzt.
+- Episodenstatus wird nach natuerlichem Playback-Ende oder Stop ab 90 Prozent sofort als gesehen gespeichert.
+- Folgenlisten werden nach dem Playback ueber den gespeicherten Staffel-Container gezielt neu geladen.
+
+## [2026.06.28.9] - 2026-06-28
+
+- Einstellungsuebersicht aus README.md entfernt; README-Versioncheck entsprechend angepasst.
+- Staffel-/Serien-Gesehenstatus wird nach Episoden-Playback sofort aktualisiert und Repository-ZIPs wurden neu gebaut.
+
+## [2026.06.28.8] - 2026-06-28
+
+- GitHub Issue Forms fuer Fehler und Verbesserungsvorschlaege ergaenzt.
+- README-Dokumentation auf die aktuelle Plugin-Version `2026.06.28.8` und die Einstellungen aus `resources/settings.xml` abgeglichen.
+- Schutzmassnahmen ergaenzt, damit README bei Versions- und Einstellungsaenderungen aktualisiert wird.
+- CONTRIBUTING-Hinweise fuer Issues, README-Pflege und GitHub-Page-Schutz ergaenzt.
