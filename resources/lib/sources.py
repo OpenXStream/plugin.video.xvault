@@ -10,7 +10,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from html import unescape as html_unescape
 from urllib.parse import urlencode, urljoin, urlparse
-from resources.lib import log_utils, utils, control, playback_settings, hoster_compat
+from resources.lib import log_utils, utils, control, playback_settings, hoster_compat, movie_identity
 from resources.lib.control import py2_decode, py2_encode, quote_plus, parse_qsl
 # from functools import reduce
 from resources.lib.control import getKodiVersion
@@ -252,6 +252,10 @@ class sources:
             self.last_source_error = 'no_sources'
             self._telemetryEvent('source_collection_started', 'sources', self._sourceTelemetryPayload())
             items = self.getSources(title, year, imdb, season, episode, originaltitle, premiered, episode_title=episode_title, episode_premiered=episode_premiered)
+            if (getattr(self, 'mediatype', None) == 'movie' and select == '2' and items
+                    and not any(i.get('identity_status') == 'verified' for i in items)):
+                control.infoDialog('Filmidentität nicht bestätigt: bitte Quelle manuell prüfen.', icon='WARNING')
+                select = '0'
             self._telemetryEvent('source_collection_finished', 'sources', self._sourceTelemetryPayload(len(items)))
             ## unnötig
             #select = '1' if control.getSetting('downloads') == 'true' and not (control.getSetting('download.movie.path') == '' or control.getSetting('download.tv.path') == '') else select
@@ -408,6 +412,9 @@ class sources:
                 if control.getSetting('pyload_enabled') == 'true':
                     cm.append(("Sende zu PyLoad", 'RunPlugin(%s?action=sendToPyLoad&name=%s&source=%s)' % (sysaddon, sysname, syssource)))
                 cm.append(("Medien-Info", 'RunPlugin(%s?action=mediaInfo&source=%s)' % (sysaddon, syssource)))
+                if items[i].get('identity_target'):
+                    cm.append(('Falscher Film: Quelle 24 Stunden ausblenden',
+                               'RunPlugin(%s?action=rejectMovieSource&source=%s)' % (sysaddon, syssource)))
                 cm.append(('Einstellungen', 'RunPlugin(%s?action=addonSettings)' % sysaddon))
                 item.addContextMenuItems(cm)
 
@@ -511,6 +518,8 @@ class sources:
 
 
     def playItem(self, title, source, params=None):
+        from resources.lib import distribution
+        distribution.checkpoint('source-playback', notify=True)
         isDebug = False
         if isDebug: log_utils.log('start playItem', log_utils.LOGWARNING)
         try:
@@ -525,6 +534,9 @@ class sources:
             progressDialog.update(0)
 
             item = json.loads(source)[0]
+            if not self._confirmMovieSource(item):
+                progressDialog.close()
+                return
             #if isDebug: log_utils.log('playItem 237', log_utils.LOGWARNING)
             if item['source'] == None: raise Exception()
             
@@ -629,6 +641,8 @@ class sources:
 
     def _playFallbackSource(self, title, meta, failed_item):
         candidates = self._fallbackSourceItems(failed_item)
+        if isinstance(meta, dict) and meta.get('mediatype') == 'movie':
+            candidates = [i for i in candidates if i.get('identity_status') == 'verified']
         if not candidates:
             return False
 
@@ -821,7 +835,8 @@ class sources:
         series_key = self._seriesCacheKey(title, year, imdb, originaltitle, premiered)
         cached, stale = self._readSourceCache(cache_key, allow_stale=True)
         if cached and not force_refresh:
-            self.sources = self._filterTemporarilyBlockedHosters(cached)
+            self.sources = movie_identity.without_rejected(os.path.join(control.dataPath, 'wrong-content.json'),
+                                                          self._filterTemporarilyBlockedHosters(cached))
             if stale:
                 log_utils.log('Quellen-Cache verwendet (stale): %s Treffer' % len(self.sources), log_utils.LOGINFO)
                 self._scheduleSourceCacheRefresh(cache_key, title, year, imdb, season, episode, originaltitle, premiered, episode_title, episode_premiered)
@@ -870,7 +885,10 @@ class sources:
         total_format = '[COLOR %s][B]%s[/B][/COLOR]'
         pdiag_format = ' 4K: %s | 1080p: %s | 720p: %s | SD: %s | %s: %s                                         '.split('|')
 
-        for i in range(0, 4 * timeout):
+        search_started = time.monotonic()
+        for i in range(0, max(1, 4 * timeout)):
+            if time.monotonic() - search_started >= timeout:
+                break
             try:
                 if control.abortRequested: return sys.exit()
                 try:
@@ -909,7 +927,7 @@ class sources:
                 try:
                     info = [name.upper() for future, name in futures.items() if not future.done()]
 
-                    percent = int(100 * float(i) / (2 * timeout) + 1)
+                    percent = min(100, max(1, int(100 * (time.monotonic() - search_started) / max(1, timeout))))
 
                     if quality in ['0']:
                         line1 = '|'.join(pdiag_format) % (source_4k_label, source_1080_label, source_720_label, source_sd_label, str(string4), source_total_label)
@@ -922,7 +940,7 @@ class sources:
                     else:
                         line1 = '|'.join(pdiag_format[3:]) % (source_sd_label, str(string4), source_total_label)
 
-                    if (i / 2) < timeout:
+                    if time.monotonic() - search_started < timeout:
                         string = "Verbleibende Indexseiten: %s"
                     else:
                         string = 'Waiting for: %s'
@@ -942,8 +960,6 @@ class sources:
                 control.sleep(1)
             except:
                 pass
-
-        time.sleep(1)
 
         for future, provider_name in futures.items():
             try:
@@ -966,11 +982,14 @@ class sources:
     def _sourceCacheKey(self, title, year, imdb, season, episode, originaltitle, premiered, episode_title, episode_premiered, sourceDict):
         provider_state = []
         for name, call, priority in sorted(sourceDict, key=lambda item: item[0]):
-            provider_state.append({
+            state = {
                 'name': name,
                 'domain': getattr(call, 'domain', ''),
                 'priority': priority
-            })
+            }
+            if getattr(call, 'cache_version', None) is not None:
+                state['cache_version'] = call.cache_version
+            provider_state.append(state)
 
         settings = {}
         for setting in [
@@ -987,7 +1006,7 @@ class sources:
             settings[setting] = control.getSetting(setting)
 
         key = {
-            'version': 8,
+            'version': 9,
             'addon': control.addonVersion,
             'mediatype': getattr(self, 'mediatype', None),
             'title': py2_decode(title),
@@ -1040,14 +1059,34 @@ class sources:
             items = entry.get('items')
             if not isinstance(items, list) or len(items) == 0:
                 return None, False
+            if self._hasVolatileSourceUrls(items):
+                log_utils.log('Quellen-Cache wegen kurzlebiger Redirects verworfen', log_utils.LOGINFO)
+                return None, False
             return items, stale
         except Exception as e:
             log_utils.log('Quellen-Cache konnte nicht gelesen werden: %s' % str(e), log_utils.LOGWARNING)
             return None, False
 
+    def _hasVolatileSourceUrls(self, items):
+        for item in items or []:
+            try:
+                raw_url = str(item.get('url') or '').split('|', 1)[0].strip()
+                parsed = urlparse(raw_url)
+                host = (parsed.hostname or '').lower()
+                path = parsed.path or ''
+                provider = str(item.get('provider') or '').lower()
+                if provider == 'serienstream' and (host == 'serienstream.to' or host.endswith('.serienstream.to')) and path.rstrip('/') == '/r':
+                    return True
+            except:
+                pass
+        return False
+
     def _writeSourceCache(self, cache_key, items):
         try:
             if not isinstance(items, list) or len(items) == 0:
+                return
+            if self._hasVolatileSourceUrls(items):
+                log_utils.log('Quellen-Cache wegen kurzlebiger Redirects nicht gespeichert', log_utils.LOGINFO)
                 return
             payload = self._readSourceCachePayload()
             entries = payload.get('entries')
@@ -1352,6 +1391,14 @@ class sources:
             if sources == None or sources == []:
                 return {'provider': source, 'count': 0, 'status': 'empty'}
             sources = self._stableUniqueSources(sources)
+            if getattr(self, 'mediatype', None) == 'movie':
+                accepted = []
+                for item in sources:
+                    accepted.extend(movie_identity.annotate([item], titles, year, imdb, item.get('movie_identity') or {}))
+                if len(accepted) != len(sources):
+                    log_utils.log('Filmidentitaet: %s widerspruechliche Treffer bei %s verworfen' %
+                                  (len(sources) - len(accepted), source), log_utils.LOGINFO)
+                sources = accepted
             for i in sources:
                 i.update({'provider': source})
                 i.update({'provider_display': self._providerDisplayName(source, call)})
@@ -1700,9 +1747,12 @@ class sources:
         if control.getSetting('hosts.sort.priority') == 'true' and self.mediatype == 'tvshow': self.sources = sorted(self.sources, key=lambda k: (k.get('prioHoster', 0) >= 999, k['priority']), reverse=False)
 
         self._applyLanguagePreference()
+        if getattr(self, 'mediatype', None) == 'movie':
+            self.sources.sort(key=lambda i: i.get('identity_status') != 'verified')
         self.sources = self._dedupeSources(self.sources)
         self.sources = self._applyHosterExclusions(self.sources)
         self.sources = self._filterTemporarilyBlockedHosters(self.sources)
+        self.sources = movie_identity.without_rejected(os.path.join(control.dataPath, 'wrong-content.json'), self.sources)
 
         if str(control.getSetting('hosts.limit')) == 'true':
             self.sources = self.sources[:int(control.getSetting('hosts.limit.num'))]
@@ -1711,6 +1761,8 @@ class sources:
 
         for i in range(len(self.sources)):
             p = self.sources[i]['provider']
+            if p == 'huhu':
+                p = 'OHA (ehemals Huhu)'
             q = self.sources[i]['quality']
             s = self.sources[i]['source']
             ## s = s.rsplit('.', 1)[0]
@@ -1732,6 +1784,8 @@ class sources:
 
             if self.sources[i].get('prioHoster', 0) >= 999:
                 label += ' | [COLOR red]CAPTCHA[/COLOR]'
+            if self.sources[i].get('identity_status') == 'unknown':
+                label += ' | [COLOR orange]Filmidentität nicht bestätigt[/COLOR]'
             self.sources[i]['label'] = label.upper()
 
             # ## EMBY shown as premium link ##
@@ -1751,11 +1805,20 @@ class sources:
             url = raw_url
             direct = item['direct']
             local = item.get('local', False)
+            provider_media = False
             provider = item['provider']
+            if provider == 'huhu' and control.getSetting('provider.huhu') == 'false':
+                return None
+            if provider == 'huhu' and not self._filterTemporarilyBlockedProviders([(provider, None)]):
+                return None
             try:
                 call = [i[1] for i in self.sourceDict if i[0] == provider][0]
                 url = call.resolve(url)
             except Exception as exc:
+                if provider == 'huhu' and getattr(exc, 'xvault_provider_reason', None):
+                    self._markProviderTemporarilyBlocked(provider, exc.xvault_provider_reason,
+                                                        getattr(exc, 'xvault_provider_ttl', PROVIDER_ERROR_TTL))
+                    return None
                 host = (urlparse(str(raw_url).split('|', 1)[0]).hostname or '').lower()
                 if not hoster_compat.is_supported_host(host):
                     raise
@@ -1767,13 +1830,24 @@ class sources:
                 url = raw_url
             url = self._normalizeResolverUrl(url, item)
 
+            if not url and not direct == True:
+                log_utils.log('Provider-Resolver lieferte keinen Redirect: Provider %s / %s' % (item['provider'], item['source']), log_utils.LOGWARNING)
+                raise Exception()
+
             if not direct == True:
                 resolved = False
-                voe_url = self._resolveVoeDirect(url, item)
+                # Some providers already call ResolveURL and return an opaque
+                # CDN URL. Do not resolve that media URL a second time. Verify
+                # its contents instead of relying on a .mp4/.m3u8 suffix.
+                provider_media = (url != raw_url and not self._isKnownHosterUrl(url)
+                                  and utils.test_stream(url))
+                voe_url = None if provider_media else self._resolveVoeDirect(url, item)
+                if provider_media:
+                    resolved = True
                 if voe_url:
                     url = voe_url
                     resolved = True
-                else:
+                elif not provider_media:
                     try:
                         include_popups = item.get('prioHoster', 0) >= 999
                         resolved_url = self._resolveWithResolveUrl(url, include_popups=include_popups)
@@ -1814,7 +1888,7 @@ class sources:
                 log_utils.log('Kein Video Link gefunden: Provider %s / %s / %s ' % (item['provider'], item['source'] , str(item['source'])), log_utils.LOGERROR)
                 raise Exception()
 
-            if check_stream and not local and not utils.test_stream(url):
+            if check_stream and not local and not (not direct and provider_media) and not utils.test_stream(url):
                 log_utils.log('URL Test Error: Provider %s / %s / %s' % (item['provider'], item['source'], url), log_utils.LOGERROR)
                 raise Exception()
 
@@ -1850,6 +1924,16 @@ class sources:
         except:
             pass
         return url
+
+    def _isKnownHosterUrl(self, url):
+        host = (urlparse(str(url or '').split('|', 1)[0]).hostname or '').lower()
+        if hoster_compat.is_supported_host(host):
+            return True
+        try:
+            return bool(_resolveurl().HostedMediaFile(url=url, include_disabled=True,
+                                                     include_universal=False, include_popups=True).valid_url())
+        except Exception:
+            return False
 
     def _resolveWithResolveUrl(self, url, include_popups=False):
         try:
@@ -1990,12 +2074,14 @@ class sources:
 
         select = control.selectDialog(labels)
         if select == -1: return 'close://'
+        if not self._confirmMovieSource(items[select]):
+            return 'close://'
 
         next = [y for x,y in enumerate(items) if x >= select]
         prev = [y for x,y in enumerate(items) if x < select][::-1]
 
         items = [items[select]]
-        items = [i for i in items+next+prev][:40]
+        items = [i for i in items+next[1:]+prev if i is items[0] or i.get('identity_status') != 'unknown'][:40]
 
         header = control.addonInfo('name')
         header2 = header.upper()
@@ -2117,6 +2203,8 @@ class sources:
             return min(3, len(items))
 
     def _resolveAutoplayCandidates(self, items, progressDialog=None, header2=''):
+        if getattr(self, 'mediatype', None) == 'movie':
+            items = [item for item in items if item.get('identity_status') == 'verified']
         self._ensureExecutor()
         max_items = min(len(items), 40)
         prefetch_window = self._autoplayPrefetchWindow(items[:max_items])
@@ -2210,6 +2298,27 @@ class sources:
 
         self._cancelFutures([state['future'] for state in pending.values()])
         return None, None
+
+    def _confirmMovieSource(self, item):
+        if item.get('identity_status') != 'unknown':
+            return True
+        return control.yesnoDialog('Die Filmidentität dieser Quelle ist nicht bestätigt.',
+                                   'Titel oder Erscheinungsjahr konnten nicht eindeutig geprüft werden.',
+                                   'Diese Quelle trotzdem abspielen?')
+
+    def rejectMovieSource(self, source):
+        item = json.loads(source)[0]
+        if not item.get('identity_target'):
+            return
+        if control.yesnoDialog('Diese Quelle liefert den falschen Film?',
+                              'Sie wird für diesen Film 24 Stunden lokal ausgeblendet.',
+                              'Andere Quellen und Geräte bleiben unverändert.'):
+            movie_identity.reject(os.path.join(control.dataPath, 'wrong-content.json'), item)
+            raw = control.window.getProperty(self.itemsProperty)
+            if raw:
+                control.window.setProperty(self.itemsProperty, json.dumps(movie_identity.without_rejected(
+                    os.path.join(control.dataPath, 'wrong-content.json'), json.loads(raw))))
+            control.execute('Container.Refresh')
 
 
     def sourcesAutoplay(self, items, title, meta):

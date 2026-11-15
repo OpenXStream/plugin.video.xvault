@@ -7,6 +7,15 @@
         <setting id="updates.auto" type="bool" label="Automatische Updates aktivieren" default="true" />
     </category>
 
+    <category label="Originalstatus &amp; Updates">
+        <setting type="action" label="Originalstatus und Supportstatus anzeigen" action="RunPlugin(&quot;plugin://plugin.video.xvault/?action=distributionStatus&quot;)" />
+        <setting id="updates.channel" type="labelenum" label="Updatekanal (nur dieses Geraet)" values="release|nightly" default="release" />
+        <setting id="updates.mode" type="enum" label="Updateverhalten" values="Benachrichtigen|Automatisch im Leerlauf" default="0" />
+        <setting type="action" label="Jetzt nach Updates suchen" action="RunPlugin(&quot;plugin://plugin.video.xvault/?action=updateCheck&quot;)" />
+        <setting type="action" label="Originalpaket installieren oder reparieren" action="RunPlugin(&quot;plugin://plugin.video.xvault/?action=updateInstall&quot;)" />
+        <setting type="text" label="Release: alle 6 Stunden. Nightly: stuendlich. Wiedergaben werden nicht unterbrochen." />
+    </category>
+
     <category label="Wiedergabe">
         <setting type="lsep" label="Fortsetzen" />
         <setting id="bookmarks" type="bool" label="Wiedergabeposition speichern" default="true" />
@@ -66,7 +75,7 @@
         <setting id="provider.fhdfilme" type="bool" label="FHD Filme" default="true" />
         <setting id="provider.fhdfilme.domain" label="[B][COLOR red]FHD Filme: PluginError oder Domain nicht erreichbar[/COLOR][/B]" type="text" default="" visible="eq(1,false)" />
         <setting id="provider.fhdfilme.check" label="FHD Filme Check" type="bool" default="true" visible="false" />
-        <setting id="provider.huhu" type="bool" label="OHA" default="true" />
+        <setting id="provider.huhu" type="bool" label="OHA (ehemals Huhu)" default="true" />
         <setting id="provider.huhu.domain" label="[B][COLOR red]OHA: PluginError oder Domain nicht erreichbar[/COLOR][/B]" type="text" default="" visible="eq(1,false)" />
         <setting id="provider.huhu.check" label="OHA Check" type="bool" default="true" visible="false" />
         <setting id="provider.kinoger" type="bool" label="KinoGer" default="true" />
@@ -152,6 +161,7 @@
         <setting type="lsep" label="xVAULT Synchronisation" />
         <setting id="sync.enabled" type="bool" label="Synchronisation aktivieren" default="false" />
         <setting id="sync.email" type="text" label="E-Mail-Adresse" default="" />
+        <setting id="sync.device_name" type="text" label="Name dieses Geräts" default="" />
         <setting id="sync.status" type="text" label="Status" default="Nicht angemeldet" enable="false" />
         <setting id="sync.last_sync_at" type="text" label="Letzte Synchronisation" default="" enable="false" />
         <setting label="Anmelden" type="action" action="RunPlugin(plugin://plugin.video.xvault/?action=syncLogin)" />
@@ -160,6 +170,7 @@
         <setting label="Jetzt synchronisieren" type="action" action="RunPlugin(plugin://plugin.video.xvault/?action=syncNow)" />
         <setting label="Backup vom Server wiederherstellen" type="action" action="RunPlugin(plugin://plugin.video.xvault/?action=syncRestoreFavorites)" />
         <setting label="Status anzeigen" type="action" action="RunPlugin(plugin://plugin.video.xvault/?action=syncStatus)" />
+        <setting label="Geräte &amp; Sync-Verlauf" type="action" action="RunPlugin(plugin://plugin.video.xvault/?action=syncDevices)" />
         <setting label="Datenschutz-Hinweis anzeigen" type="action" action="RunPlugin(plugin://plugin.video.xvault/?action=syncPrivacy)" />
         <setting label="Abmelden" type="action" action="RunPlugin(plugin://plugin.video.xvault/?action=syncLogout)" />
         <setting id="sync.api_key" type="text" option="hidden" label="API-Key" default="" visible="false" />
@@ -246,6 +257,21 @@
         <setting label="Hilfe zum Ordnerpfad anzeigen" type="action" action="RunPlugin(plugin://plugin.video.xvault/?action=settings&amp;subaction=downloadInfo)" option="" />
     </category>
 
+    <category label="Radio">
+        <setting type="lsep" label="Radio Browser · Deutschland" />
+        <setting type="text" label="Nur deutsche Sender mit positivem letztem Streamcheck." />
+        <setting id="radio.enabled" type="bool" label="Radio aktivieren" default="true" />
+        <setting id="radio.sort" type="enum" label="Sender sortieren" values="Meiste Votes|Name A–Z|Höchste Bitrate" default="0" />
+        <setting id="radio.codec" type="enum" label="Bevorzugtes Audioformat" values="Automatisch (MP3 bevorzugt)|MP3|AAC" default="0" />
+        <setting id="radio.visualisation" type="enum" label="Visualisierung beim Radiostart" values="xVAULT-Visuals|Aus" default="0" />
+        <setting type="text" label="xVAULT-Visuals: Windows 64 Bit (Kodi 22), Android / Fire OS (Kodi 21)." />
+        <setting type="text" label="Passende ARM32-/ARM64-Pakete werden automatisch nachgeladen, sobald verfügbar." />
+        <setting label="Senderliste aktualisieren" type="action" action="RunPlugin(plugin://plugin.video.xvault/?action=radioRefresh)" />
+        <setting label="Über Radio" type="action" action="RunPlugin(plugin://plugin.video.xvault/?action=radioAbout)" />
+        <setting id="radio.history" type="text" label="Zuletzt gehörte Sender" default="" visible="false" />
+        <setting id="radio.votes" type="text" label="Bestätigte Radio-Stimmen" default="" visible="false" />
+    </category>
+
     <category label="Untertitel">
         <setting id="subtitles" type="bool" label="Untertitel aktivieren" default="false" />
         <setting id="subtitles.lang.1" type="select" label="Hauptsprache" values="Afrikaans|Albanian|Arabic|Armenian|Basque|Bengali|Bosnian|Breton|Bulgarian|Burmese|Catalan|Chinese|Croatian|Czech|Danish|Dutch|English|Esperanto|Estonian|Finnish|French|Galician|Georgian|German|Greek|Hebrew|Hindi|Hungarian|Icelandic|Indonesian|Italian|Japanese|Kazakh|Khmer|Korean|Latvian|Lithuanian|Luxembourgish|Macedonian|Malay|Malayalam|Manipuri|Mongolian|Montenegrin|Norwegian|Occitan|Persian|Polish|Portuguese|Portuguese(Brazil)|Romanian|Russian|Serbian|Sinhalese|Slovak|Slovenian|Spanish|Swahili|Swedish|Syriac|Tagalog|Tamil|Telugu|Thai|Turkish|Ukrainian|Urdu" enable="!eq(-1,false)" default="German" />
@@ -323,7 +349,6 @@
         <setting id="first_install.telemetry_default.applied" type="bool" label="Erstinstallations-Statistikvorgabe gesetzt" default="false" visible="false" />
         <setting id="plus.enabled" type="bool" label="Plus aktiv" default="false" visible="false" />
         <setting id="plus.client_id" type="text" label="Plus Client" default="" visible="false" />
-        <setting id="updates.channel" type="text" label="Update-Kanal" default="stable" visible="false" />
         <setting id="updates.manifest_url" type="text" label="Update-Manifest" default="" visible="false" />
         <setting id="updates.download_url" type="text" label="Update-Download" default="" visible="false" />
     </category>

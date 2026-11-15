@@ -1,3 +1,161 @@
+xVAULT 2026.11.01.1 (Release)
+Entwickler: mojomedia1812
+
+- Stabiler Release auf Basis der geprüften Nightly 2026.10.30.2; spätere Nightly-Erweiterungen bleiben im Nightly-Kanal.
+- xVAULT-Visuals für Kodi 21 / Android ARM32 und ARM64 sowie Kodi 22 / Windows 64 Bit: sieben Modi mit dem xVAULT-Neon-Radio-Schriftzug, automatische Auswahl passender Plattformpakete und verlässliches Nachladen bei der Erstinstallation.
+- Synchronisation: Anmeldung dauerhaft speichern, Status und letzten Abgleich korrekt anzeigen; offene Löschkonflikte blockieren den Geräteabgleich nicht mehr.
+- Quellensuche: eingestelltes Zeitlimit tatsächlich einhalten. Filmidentität über Anbieter-IDs und Jahr prüfen, widersprüchliche Treffer verwerfen und unbestätigte Quellen nur zur bewussten manuellen Auswahl anbieten.
+- OHA-Anfragen mit HTTPS-Prüfung, begrenzter Antwortgröße und Zeitbudget; Radio kann vollständig deaktiviert werden. Gespeicherte Einstellungen und Favoriten bleiben erhalten.
+- Enthält weiterhin Radio Browser mit deutschen Sendern, Senderfamilien, Genres, Votes und Dublettenerkennung sowie die übersichtliche Werkzeuge-Neugliederung.
+
+xVAULT 2026.10.30.2 (Nightly)
+Entwickler: mojomedia1812
+
+- Android: Visuals-Hinweis in den Radio-Einstellungen ergänzt; ARM32 und ARM64 werden passend zum Kodi-Prozess ausgewählt, auch auf einem 64-Bit-Kernel mit 32-Bit-Kodi.
+- Separater nativer ARM64-Build für Kodi 21 mit allen sieben Visuals, Neon-Radio-Schriftzug und automatischer optionaler Installation über den passenden Plattformindex.
+- Erstinstallation: frisch nachgeladene Python-Module samt ihren Abhängigkeiten stehen dem bereits laufenden Kodi-Dienst sofort zur Verfügung; der Radio-Visualisierungsmonitor startet dadurch auch ohne zusätzlichen Neustart.
+
+xVAULT 2026.10.29.3 (Nightly)
+Entwickler: mojomedia1812
+
+- xVAULT-Visuals: freigegebener metallischer xVAULT-Schriftzug mit schrägem Neon-Radio in allen sieben Modi, auch hinter den Pastelllinien.
+- Neuer nativer Fire-OS-/Android-ARM32-Build für Kodi 21 mit OpenGL ES 3, voller Bildschirmauflösung, sanftem Glow und optimierten Kurvenkonturen für alle sieben Musikwelten.
+- Passende Visuals-Pakete für Kodi 22 / Windows 64 Bit und Kodi 21 / Android ARM32 werden automatisch als optionale Abhängigkeit nachgeladen. Bestehende Pakete werden im Leerlauf signatur- und hashgeprüft mit Sicherung und Rücksetzung bei Fehlern aktualisiert. Andere Plattformen und Kodi-Versionen werden übersprungen; ein fehlendes Paket blockiert Radio nicht.
+- Quellensuche: das eingestellte Zeitlimit wird anhand der tatsächlich verstrichenen Zeit eingehalten statt bis zur vierfachen Dauer zu warten.
+- Synchronisation: Kodi-Einstellungs-API statt reiner XML-Schreibzugriffe; Anmeldung erst nach dauerhafter Speicherung als erfolgreich melden und letzten Sync-Zeitpunkt unabhängig von veralteten Einstellungswerten wiederherstellen.
+- Geräteabgleich: offene Löschkonflikte mit leerem PHP-Patch blockieren weder weitere Abgleiche noch Sync-Verlauf oder Konfliktauswahl.
+
+xVAULT 2026.10.29.2
+Entwickler: mojomedia1812
+
+- Filmidentität zentral prüfen: widersprüchliche IDs/Jahre ausschließen; unbestätigte Treffer nur manuell mit Bestätigung, nicht per Autoplay oder automatischer Ersatzquelle.
+- Gleichnamige Filmkandidaten bei Movie2k2 und Megakino weiterprüfen; zusätzliche Identitätsdaten aus wichtigen Scrapern und ID-basierten Anfragen nutzen.
+- Falsch belegte Filmquellen über das Kontextmenü für 24 Stunden lokal ausblenden.
+- OHA (ehemals Huhu): API-Abrufe begrenzen, nicht cachen, HTTPS prüfen, Fehler getrennt protokollieren und nach Fehlern pausieren; Quellen-Schalter auch bei alten Einträgen beachten.
+- Radio aktivieren/deaktivieren: Menü, direkte Aufrufe, Hintergrund-Netzwerkprüfungen und automatische Visualisierung steuern; Favoriten und Einstellungen erhalten. Release bleibt 2026.10.28.1.
+
+xVAULT 2026.10.28.2
+Entwickler: mojomedia1812
+
+- Radio: Senderlisten bei leerer Kodi-Favoritenverwaltung laden; JSON null als leere Liste behandeln und vorhandene Favoriten erhalten.
+- Radio: unerwartete Fehler mit Aufrufstellen protokollieren, ohne möglicherweise sensible Fehlerwerte auszugeben.
+- Nightly-Downloadlink korrigiert. Release-Kanal bleibt bei 2026.10.28.1.
+
+xVAULT 2026.10.28.1
+Entwickler: mojomedia1812
+
+- Radio Browser: deutsche Sender, Genres und Senderfamilien, Suche, Votes mit bestätigter Abstimmung, Qualitätsvarianten und sichere Dublettenerkennung.
+- Schnellere Radio-Menüs durch vorbereitete Indizes, Kodi-Verzeichnis-Cache, Offscreen-ListItems und Seiten mit bis zu 250 Sendern.
+- xVAULT-Visuals mit sieben gespeicherten Modi: Pastelllinien, Resonance, Liquid Emblem, Klangarchiv, Lichtgewebe, Eclipse und Gravity. Native Musikreaktion und automatische Vollbildanzeige beim Radiostart.
+- Separates Visuals-Add-on 22.0.1 für Kodi 22 / Windows x86_64; andere Systeme können Radio ohne Visuals nutzen. Keine Abhängigkeit von Shadertoy, Spectrum oder Waveform.
+- Hauptmenü: sichtbaren Eintrag „Stream-URL abspielen“ entfernen.
+- Werkzeuge in Einstellungen, Updates und Version sowie Hilfe und Problembehebung gliedern; vorhandene Aktionen und Bestätigungen erhalten.
+- Einheitliche Bezeichnungen, hilfreiche Beschreibungen auch für Aktionen, erkennbare Menüpfade und aktuelle Anzeige des Update-Kanals und der Anbieter-Zugänge.
+- Dynamische Werkzeuge- und Anbieterlisten ohne Verzeichnis-Cache anzeigen, damit geänderte Einstellungen beim Zurückkehren sichtbar sind.
+
+xVAULT 2026.10.27.4 (Nightly)
+Entwickler: mojomedia1812
+
+- Eigenständiges natives Add-on xVAULT-Visuals: Bass in Rosé, Mitten in Mint und Höhen in Lavendel als drei einzelne ruhige Wellenlinien mit sanftem Glow auf dunklem Grund. Feste himmelblaue Nulllinie.
+- Nativer Build 22.0.1 mit sieben Modi: Pastelllinien, Resonance, Liquid Emblem, Klangarchiv, Lichtgewebe, Eclipse und Gravity. Kodis native Presetliste, Vor/Zurück/Zufall, gespeicherte Auswahl und weiche Übergänge zwischen den neuen Szenen; echter Audioverlauf für das Klangarchiv.
+- Eigenes Audiobandfilter und Direktzeichnung in voller Kodi-Bildschirmauflösung mit Kantenglättung. Keine Abhängigkeit und keine automatische Installation von Shadertoy, Spectrum oder Waveform.
+- Nach tatsächlichem Start eines Radiosenders automatisch die native Visualisierung öffnen; in den Radio-Einstellungen abschaltbar. Kodi verarbeitet Maus und Fernbedienung wie gewohnt. Nach Radioende die vorherige Kodi-Visualisierung wiederherstellen, sofern sie nicht manuell geändert wurde.
+- Separates Visuals-Paket für Kodi 22 unter Windows x86_64 im Repository. Andere Plattformen überspringen die automatische Binärinstallation; fehlende Visualisierung blockiert die Radiowiedergabe nicht.
+
+xVAULT 2026.10.27.3 (Nightly)
+Entwickler: mojomedia1812
+
+- Radio: aufbereitete Sender-, Familien- und Genreindizes wiederverwenden, statt bei jedem Menüwechsel alle Rohdaten erneut zu normalisieren.
+- Indizes bei Sender-/Dublettenänderungen oder Ablauf erneuern; API-Ausfälle erhalten eine kurze Wartezeit statt wiederholter Netzabfragen bei jedem Klick.
+- Kodis Offscreen-ListItems und Verzeichnis-Cache für Übersichten nutzen; Favoriten, Verlauf und Senderlisten bleiben aktuell.
+- Große Senderlisten auf 250 Einträge pro Seite begrenzen; Netzwerkbibliothek erst bei tatsächlichen Abrufen laden.
+
+xVAULT 2026.10.27.2 (Nightly)
+Entwickler: mojomedia1812
+
+- Radio Browser: ausschließlich deutsche Radiosender mit positivem letztem Streamcheck; erneute Prüfung vor Wiedergabe.
+- Native Kodi-Audiowiedergabe, Musik-Metadaten, Kodi-Favoriten, gerätelokaler Hörverlauf und Audioformatwahl.
+- Navigation nach Genre und bekannten Senderfamilien, kombinierbare Filter, Suche und Sortierung nach Votes, Name oder Bitrate.
+- Qualitätsvarianten zusammengefasst; manuelle Abstimmung mit Bestätigung, ohne automatische Wiederholung verlorener Antworten.
+- Radio-Dubletten: identische URLs und im Hintergrund bestätigte Streamziele zusammenfassen; bekannte Spartensender schützen, alte Favoriten-IDs behalten, Votes nicht addieren.
+- Sendercache mit begrenzter Offline-Liste; Wiedergabe weiterhin nur nach aktueller Sender- und Streamprüfung.
+
+xVAULT 2026.10.26.1
+Entwickler: mojomedia1812
+
+- VIXSTREAM: Wiedergabe-Header auch beim separaten HLS-Schluesselabruf passend zur Kodi-Version uebergeben. Das behebt den reproduzierten HTTP-403-Abbruch bei Die Monkees unter Kodi 21.3 / InputStream Adaptive 21.5.25.
+- Automatische Updates behandeln hoehere Versionen im ausgewaehlten Kanal auch nach einem Kanalwechsel als Vorwaertsupdate. Echte Rueckwechsel und Reparaturen bleiben bestaetigungspflichtig.
+- Nach einer Installation wird der gespeicherte Updatezustand fuer die neue Version erneut geprueft.
+- Zusaetzlichen Attestierungshinweis aus dem Original-/Supportstatus entfernt.
+
+xVAULT 2026.10.26.3
+Entwickler: mojomedia1812
+
+- Automatische Updates: Eine hoehere Version im gewaehlten Kanal wird auch nach einem Kanalwechsel automatisch installiert. Niedrigere Versionen und Reparaturen bleiben bestaetigungspflichtig.
+- Nach einer Installation werden Updateentscheidungen fuer die vorherige Version neu geprueft.
+- Zusaetzlichen Attestierungshinweis aus dem Original-/Supportstatus entfernt.
+
+xVAULT 2026.10.26.2
+Entwickler: mojomedia1812
+
+- VIXSTREAM: HTTP-Header auch beim HLS-Schlüsselabruf versionsgerecht an InputStream Adaptive übergeben. HTTP-403-Abbruch unter Kodi 21.3 mit Die Monkees reproduziert und behoben.
+
+xVAULT 2026.10.24.1
+Entwickler: mojomedia1812
+
+- Neue Domain https://xvault.repowork.de/ und getrennte Release-/Nightly-Kanaele.
+- Signierte Dateireferenzen und SHA-256-Pruefung des installierten Pakets bei jedem Hauptstart. KodiBox-, Versions- und Supportstatus sichtbar.
+- Eigene Updatepruefung unabhaengig von Kodis globalen Einstellungen. Gesicherte Paketinstallation und bestaetigter Rueckwechsel von Nightly auf Release.
+- MoFlix: Colony (2026) wird nicht mehr durch The Colony (2013) ersetzt.
+- VIXSTREAM: keine erfundene deutsche Tonspur oder pauschale 1080p-Angabe; verschachtelte HLS-Listen und Header auf Ersatzdomains geprueft.
+
+xVAULT 2026.10.23.1
+Entwickler: mojomedia1812
+
+- Einschalten/vide0.net: Bereits aufgeloeste Direktstreams ohne Dateiendung werden nicht erneut als Hoster-Link aufgeloest und verworfen.
+- Stream-Pruefung per kleinem GET mit Inhaltspruefung: gueltige Streams brauchen keine HEAD-Unterstuetzung; HTML-/Werbeweiterleitungen hinter Video-Adressen werden verworfen, Ersatzquellen bleiben verfuegbar.
+
+- Hauptmenue und Zurueck-Navigation warten nicht mehr auf den Geraete-Sync. Der Hintergrunddienst uebernimmt den kontogebundenen Auftrag.
+- Unveraenderte Wiedergabe- und Gesehen-Staende werden uebersprungen; Aenderungen werden in gemeinsamen Schreibvorgaengen uebernommen.
+- Sync-Status und Fortsetzen lesen ohne Schreibsperre. Auf dem echten Fire-TV-Stick sinkt die Zurueck-Zeit auf rund 2,2 Sekunden.
+- Repository-Page, Handbuch, Kodi-Index und Download-Pakete aktualisiert.
+
+xVAULT 2026.10.22.1
+Entwickler: mojomedia1812
+
+- LiveTV nutzt die neue OHA-API unter /live/ statt der entfernten MediaUrl-Endpunkte. Alte Caches werden gesichert, Sender neu geladen und Streams per GET aufgeloest.
+- Mehrgeraete-Sync mit getrennten Anmeldungen, Geraeteuebersicht, Aenderungsverlauf und Konfliktauswahl.
+- Offline-Aenderungen bleiben dauerhaft gespeichert. Serverrevisionen ersetzen den Vergleich ueber Geraeteuhren.
+- Wiedergabe und manuelle Markierungen verwenden gemeinsame Inhaltsschluessel.
+- API und Plugin gemeinsam aktualisiert. Alle beteiligten Geraete auf diese Version aktualisieren.
+- 47 automatisierte Tests bestanden; Sync und LiveTV im lokal installierten Kodi geprueft.
+- Repository-Page, Handbuch, Kodi-Index und Download-Pakete aktualisiert.
+
+xVAULT 2026.10.20.1
+Entwickler: mojomedia1812
+
+- SerienStream filtert generische Provider-Eintraege und ordnet Folgen nur ueber eindeutige Episodentitel zu. Upload-Daten ersetzen keine Episodenidentitaet; englische Folgen bleiben korrekt zugeordnet.
+- Der Providercheck beachtet dieselbe DNS-over-HTTPS-Einstellung wie die Quellensuche. Voruebergehende Netzwerkfehler sperren Anbieter nicht mehr dauerhaft.
+- Live im lokalen Kodi 22 RC1 geprueft: Slow Horses S5E1-6 und FBI S8E18-22 liefern die richtigen Quellen; Slow Horses S5E1 und FBI S8E18 starten ueber VOE.
+- Repository-Seite, Kodi-Index, Add-on-ZIP und Download-Archiv auf 2026.10.20.1 aktualisiert.
+
+xVAULT 2026.10.11.1
+Entwickler: mojomedia1812
+
+- Favoriten-Sync repariert die sichtbare "Letzte Synchronisation"-Anzeige aus dem echten lokalen Sync-Status, wenn der eigentliche Favoritenabgleich bereits erfolgreich war.
+- Manuelle Favoriten-Synchronisation meldet API-Anmeldefehler nicht mehr als Erfolg und entfernt abgelehnte Zugangsdaten sauber.
+- LiveTV/LiveTV lite erzwingen bei FFmpeg Direct keinen Timeshift-Modus mehr, damit Fire-TV-Installationen nicht an einem nicht beschreibbaren Timeshift-Pufferpfad abbrechen.
+- Live am installierten Fire-TV-Kodi geprueft: LiveTV lite > Deutsche TV > Pro7 startet und bleibt aktiv, statt nach dem Laden abzubrechen.
+- Repository-Seite, Kodi-Index, Add-on-ZIP und Download-Archiv wurden auf 2026.10.11.1 aktualisiert.
+
+xVAULT 2026.10.10.1
+Entwickler: mojomedia1812
+
+- SerienStream-/VOE-Quellen mit kurzlebigen serienstream.to/r-Weiterleitungen werden nicht mehr aus dem Quellen-Cache wiederverwendet oder erneut gespeichert.
+- Der Resolver bricht sauber ab, wenn SerienStream keinen Redirect mehr liefert, statt VOE mit einer ungueltigen None-URL aufzurufen.
+- Live am installierten Fire-TV-Kodi geprueft: Die Logs fuer Phineas und Ferb zeigen den alten Cache-/Redirect-Fehler; der Fix wurde in Kodi eingespielt und die temporaeren SerienStream-Hoster-Sperren wurden entfernt.
+- Repository-Seite, Kodi-Index, Add-on-ZIP und Download-Archiv wurden auf 2026.10.10.1 aktualisiert.
+
 xVAULT 2026.10.01.1
 Entwickler: mojomedia1812
 

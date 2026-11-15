@@ -27,6 +27,14 @@ title = params.get('title')
 source = params.get('source')
 
 try:
+    from resources.lib import distribution, updater
+    distribution.checkpoint('plugin-start', rehash=action in (None, 'root'), notify=action in (None, 'root'))
+    updater.request_check()
+except Exception as exc:
+    from resources.lib import log_utils
+    log_utils.log('xVAULT Herkunftspruefung nicht verfuegbar: %s' % type(exc).__name__, log_utils.LOGWARNING)
+
+try:
     from resources.lib import playback_settings
     playback_settings.migrate_mode_setting()
 except Exception:
@@ -105,8 +113,8 @@ if action is None or action == 'root':
     except Exception as exc:
         _log_startup_warning('startup info: %s' % str(exc))
     try:
-        from resources.lib.sync import favorites_sync
-        favorites_sync.check_and_push_if_changed(silent=True)
+        from resources.lib.sync import engine
+        engine.request_background(active=True)
     except Exception as exc:
         _log_startup_warning('favorites sync: %s' % str(exc))
     try:
@@ -135,6 +143,22 @@ elif action == 'pluginInfo':
 elif action == 'supportUpload':
     from resources.lib import supportinfo
     supportinfo.createSupportPackageAndUpload()
+
+elif action == 'distributionStatus':
+    from resources.lib import distribution
+    distribution.show_status()
+
+elif action == 'updateCheck':
+    from resources.lib import updater
+    updater.manual_check()
+
+elif action == 'updateChannel':
+    from resources.lib import updater
+    updater.choose_channel()
+
+elif action == 'updateInstall':
+    from resources.lib import updater
+    updater.install_offer()
     _finish_action()
 
 elif action == 'repairSettings':
@@ -168,6 +192,15 @@ elif action == 'tvNavigator':
     _track_menu('tvshows')
     from resources.lib.indexers import navigator
     navigator.navigator().tvshows()
+
+elif action in ('radioNavigator', 'radioGenres', 'radioFamilies', 'radioList', 'radioSearch',
+                'radioFavorites', 'radioRecent', 'radioPlay', 'radioFavoriteToggle',
+                'radioVote', 'radioInfo', 'radioSort', 'radioRefresh', 'radioAbout'):
+    from resources.lib import radio
+    radio.dispatch(action, params)
+    if action not in ('radioNavigator', 'radioGenres', 'radioFamilies', 'radioList',
+                      'radioSearch', 'radioFavorites', 'radioRecent', 'radioPlay'):
+        _finish_action()
 
 elif action == 'liveTVNavigator':
     _track_menu('livetv')
@@ -264,10 +297,13 @@ elif action == 'liveTVLitePlay':
     from resources.lib import linear_tv_lite
     linear_tv_lite.play(params.get('id'))
 
-elif action == 'toolNavigator':
+elif action in ('toolNavigator', 'toolSettingsNavigator', 'toolUpdatesNavigator', 'toolHelpNavigator'):
     _track_menu('tools')
     from resources.lib.indexers import navigator
-    navigator.navigator().tools()
+    menu = navigator.navigator()
+    menus = {'toolNavigator': menu.tools, 'toolSettingsNavigator': menu.tools_settings,
+             'toolUpdatesNavigator': menu.tools_updates, 'toolHelpNavigator': menu.tools_help}
+    menus[action]()
 
 elif action == 'downloadNavigator':
     _track_menu('downloads')
@@ -582,6 +618,11 @@ elif action == 'playItem':
     if not control.visible(): control.busy()
     from resources.lib import sources
     sources.sources().playItem(title, source, params)
+
+elif action == 'rejectMovieSource':
+    from resources.lib import sources
+    sources.sources().rejectMovieSource(source)
+    _finish_action()
 
 elif action == "settings":  # alle Quellen aktivieren / deaktivieren
     from resources import settings

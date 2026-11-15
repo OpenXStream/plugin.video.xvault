@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import threading
 import time
 import uuid
@@ -86,6 +87,7 @@ def reconcile_auth_settings():
         if get_setting(SYNC_ENABLED) != 'true':
             set_setting(SYNC_ENABLED, 'true')
         set_status('Angemeldet als %s' % (user_email or get_setting(ACCOUNT_EMAIL)))
+        repair_last_sync_from_state()
     elif get_setting(STATUS_TEXT) != 'Nicht angemeldet':
         set_status('Nicht angemeldet')
 
@@ -155,9 +157,10 @@ def _replace_file(source, destination):
 
 def _auth_data():
     global _AUTH_CACHE
-    if _AUTH_CACHE is None:
-        data = read_json(AUTH_FILE, {})
-        _AUTH_CACHE = data if isinstance(data, dict) else {}
+    # Service and plugin run in different interpreters. Do not retain a login
+    # that another interpreter has logged out or replaced.
+    data = read_json(AUTH_FILE, {})
+    _AUTH_CACHE = data if isinstance(data, dict) else {}
     return _AUTH_CACHE
 
 
@@ -185,18 +188,16 @@ def _auth_logged_in(data):
 
 
 def save_login(user_email, token):
-    set_setting(ACCOUNT_EMAIL, user_email)
-    set_setting(API_KEY, token)
-    set_setting(LOGGED_IN, 'true')
-    set_setting(SYNC_ENABLED, 'true')
-    _write_auth({
+    if not token or not _write_auth({
         'email': user_email,
         'api_key': token,
         'logged_in': True,
         'updated_at': time.strftime('%Y-%m-%dT%H:%M:%S%z'),
-    })
+    }):
+        return False
+    # Persist the authoritative login before touching Kodi's UI settings.
     reconcile_auth_settings()
-    set_status('Angemeldet als %s' % user_email)
+    return True
 
 
 def clear_login():
@@ -218,7 +219,38 @@ def set_status(text):
 
 
 def update_last_sync(timestamp):
-    set_setting(LAST_SYNC_AT, timestamp)
+    status = {'updated_at': timestamp}
+    if read_json('sync_status.json', {}) != status:
+        write_json('sync_status.json', status)
+    set_setting(LAST_SYNC_AT, _display_sync_timestamp(timestamp))
+
+
+def repair_last_sync_from_state():
+    current = get_setting(LAST_SYNC_AT)
+    newest = current
+    for filename in ('sync_favorites_state.json', 'sync_binge_state.json', 'sync_status.json'):
+        updated_at = (read_json(filename, {}) or {}).get('updated_at')
+        if _sync_timestamp_key(updated_at) > _sync_timestamp_key(newest):
+            newest = updated_at
+    if newest and _sync_timestamp_key(newest) > _sync_timestamp_key(current):
+        set_setting(LAST_SYNC_AT, _display_sync_timestamp(newest))
+
+
+def _sync_timestamp_key(value):
+    numbers = re.findall(r'\d+', str(value or ''))
+    if len(numbers) < 3:
+        return (0, 0, 0, 0, 0, 0)
+    parts = [int(part) for part in numbers[:6]]
+    while len(parts) < 6:
+        parts.append(0)
+    return tuple(parts)
+
+
+def _display_sync_timestamp(value):
+    key = _sync_timestamp_key(value)
+    if key[0] <= 0:
+        return str(value or '')
+    return '%04d-%02d-%02d %02d:%02d:%02d' % key
 
 
 def mask_token(token):

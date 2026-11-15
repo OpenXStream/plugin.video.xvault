@@ -66,6 +66,8 @@ class player(xbmc.Player):
 
 
     def run(self, title, url, meta):
+        from resources.lib import distribution
+        distribution.checkpoint('player-start')
         import xbmc
         try:
             self.meta = control.sanitizeMetaArtwork(meta)
@@ -95,6 +97,28 @@ class player(xbmc.Player):
             self.container_path = meta.get('_xvault_container_path', '')
             self.queue_playback = bool(meta.get('_xvault_queue_playback', False))
             self.queue_last = bool(meta.get('_xvault_queue_last', False))
+            self._sync_session = None
+            self._sync_sequence = 0
+            self._sync_base = -1
+            self._sync_watch_base = -1
+            self._sync_watch_recorded = False
+            self._sync_checkpoint_at = time.monotonic()
+            try:
+                import uuid
+                from resources.lib.sync import engine, binge_sync, storage
+                if storage.is_enabled() and storage.is_logged_in():
+                    self._sync_session = str(uuid.uuid4())
+                    key = binge_sync.item_key(meta, self.name, self.year)
+                    self._sync_base = engine.playback_base(key)
+                    self._sync_watch_base = engine.playback_base(key, 'watch')
+                    engine.synchronize(active=True)
+                    from resources.lib.sync import account
+                    if not account.choose_resume(key):
+                        return False
+                    self._sync_base = engine.playback_base(key)
+                    self._sync_watch_base = engine.playback_base(key, 'watch')
+            except Exception as exc:
+                log_utils.log('xVAULT sync: pre-playback sync pending: %s' % exc, log_utils.LOGWARNING)
             self.offset = bookmarks().get(self.name, self.year)
 
             from glob import glob
@@ -153,6 +177,8 @@ class player(xbmc.Player):
                     item.setProperty('inputstream.adaptive.common_headers', strhdr)
                     item.setProperty('inputstream.adaptive.stream_headers', strhdr)
                     if kodiver > 19: item.setProperty('inputstream.adaptive.manifest_headers', strhdr)
+                    if is_hls_manifest and self._needsManifestHeadersInPath(stream_url):
+                        self._setHlsKeyHeaders(item, strhdr, kodiver)
                     # Vixcloud lehnt Kodis ersten Manifest-Zugriff ohne die Pipe-Header ab.
                     url = original_url if self._needsManifestHeadersInPath(stream_url) else stream_url
 
@@ -194,9 +220,23 @@ class player(xbmc.Player):
         return re.sub(r'\s+', ' ', value).strip()
 
 
+    @staticmethod
+    def _setHlsKeyHeaders(item, headers, kodi_version):
+        # AES key requests use a separate header channel on ISA <= 21.
+        # Keep the key URI from EXT-X-KEY; never replace it with the manifest URL.
+        if kodi_version >= 22:
+            item.setProperty('inputstream.adaptive.drm', json.dumps({
+                'none': {'license': {'req_headers': headers}},
+            }))
+        else:
+            item.setProperty('inputstream.adaptive.license_key', '|' + headers)
+
     def _needsManifestHeadersInPath(self, stream_url):
         try:
-            return re.search(r'^https?://(?:www\.)?vixcloud\.co/playlist/\d+(?:[/?#]|$)', str(stream_url).lower()) != None
+            # VIXSTREAM also serves manifests on vixsrc.to and configurable
+            # replacement domains. Kodi's initial URL access needs the same
+            # headers as InputStream Adaptive, regardless of that hostname.
+            return re.search(r'^https?://[^/]+/playlist/\d+(?:[/?#]|$)', str(stream_url).lower()) != None
         except:
             return False
 
@@ -258,6 +298,8 @@ class player(xbmc.Player):
                 stopped_without_callback = 0
                 self.totalTime = self.getTotalTime()
                 self.currentTime = self.getTime()
+                if time.monotonic() - getattr(self, '_sync_checkpoint_at', 0) >= 30:
+                    self._syncCheckpoint()
                 if self._isPlaybackPaused():
                     last_progress_at = time.time()
                 elif self.currentTime > last_position + 0.25:
@@ -341,6 +383,25 @@ class player(xbmc.Player):
 
     def onPlayBackPaused(self):
         self._traktPause()
+        self._syncCheckpoint()
+
+    def _syncCheckpoint(self, completed=None):
+        if not getattr(self, '_sync_session', None):
+            return
+        self._sync_sequence += 1
+        self._sync_checkpoint_at = time.monotonic()
+        try:
+            from resources.lib.sync import binge_sync
+            binge_sync.record_playback(
+                self.meta, self.name, self.year, self.currentTime, self.totalTime,
+                completed=completed, push=True, session_id=self._sync_session,
+                base_revision=self._sync_base, sequence=self._sync_sequence,
+                watch_base_revision=self._sync_watch_base,
+                record_completion=not self._sync_watch_recorded)
+            if completed or (completed is None and watch_progress.is_completed_position(self.currentTime, self.totalTime)):
+                self._sync_watch_recorded = True
+        except Exception as exc:
+            log_utils.log('xVAULT sync: playback checkpoint pending: %s' % exc, log_utils.LOGWARNING)
 
     def onPlayBackResumed(self):
         self._traktStart()
@@ -378,7 +439,10 @@ class player(xbmc.Player):
         bookmarks().reset(self.currentTime, self.totalTime, self.name, self.year)
         try:
             from resources.lib.sync import binge_sync
-            binge_sync.record_playback(self.meta, self.name, self.year, self.currentTime, self.totalTime, completed=completed, push=True)
+            if getattr(self, '_sync_session', None):
+                self._syncCheckpoint(completed=completed)
+            else:
+                binge_sync.record_playback(self.meta, self.name, self.year, self.currentTime, self.totalTime, completed=completed, push=True)
         except:
             pass
         try:

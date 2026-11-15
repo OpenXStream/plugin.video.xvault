@@ -195,7 +195,8 @@ def check_domains():
         for item in domains:
             _domain = item['domain']
             _provider = item['provider']
-            t = threading.Thread(target=_checkdomain, args=(_domain, _provider), daemon=True)
+            t = threading.Thread(target=_checkdomain, args=(_domain, _provider),
+                                 name='xvault-domain-' + _provider, daemon=True)
             threads += [t]
             t.start()
     except:
@@ -216,7 +217,10 @@ def RandomUA():
     return choice(_User_Agents)
 
 def _doh_enabled():
-    return getSetting('bypassDNSlock', 'false') == 'true'
+    value = getSetting('bypassDNSlock.enabled', '')
+    if value in ('true', 'false'):
+        return value == 'true'
+    return True
 
 def _checkdomain_with_doh(domain):
     try:
@@ -280,9 +284,9 @@ def _checkdomain(_domain, _provider):
                     check = 'true'
                 else:
                     check = 'false'
-        except:
-            check = 'false'
-            #pass
+        except Exception as exc:
+            check = ''
+            if isLogger: logger.warning(' -> [service]: Provider domain check failed for %s: %s' % (domain, str(exc)))
         finally:
             wrongDomain = 'site-maps.cc', 'www.drei.at', 'notice.cuii.info'
             doh_enabled = _doh_enabled()
@@ -355,7 +359,7 @@ def ensure_youtube_api_keys():
             logger.warning('[service]: Failed to write YouTube api_keys.json: %s' % str(e))
 
 
-if __name__ == "__main__":
+def run_service():
 	try:
 		from resources.lib import settings_repair
 		settings_repair.check_and_offer_repair(interactive=False, source='service-start')
@@ -385,9 +389,20 @@ if __name__ == "__main__":
 	except Exception:
 		pass
 	from resources.lib import updater
+	try:
+		from resources.lib import distribution
+		distribution.checkpoint('service-start', rehash=True)
+		updater.start_background()
+	except Exception as exc:
+		if isLogger: logger.warning('[service]: Update-/Herkunftspruefung: %s' % type(exc).__name__)
 	if updater.automatic_updates_enabled():
 		from resources.lib import repository
 		repository.ensure_xvault_repository()
+	try:
+		from resources.lib import radio
+		radio.start_background()
+	except Exception as exc:
+		if isLogger: logger.warning('[service]: Radio-Dublettenerkennung: %s' % type(exc).__name__)
 	check_domains()
 	delHtmlCache()
 	ensure_youtube_api_keys()
@@ -411,6 +426,22 @@ if __name__ == "__main__":
 	finally:
 		try:
 			from resources.lib import telemetry
-			telemetry.app_stop()
+			from resources.lib import update_maintenance
+			if not update_maintenance.requested():
+				telemetry.app_stop()
 		except Exception:
 			pass
+
+
+if __name__ == "__main__":
+    from resources.lib import update_maintenance
+    update_maintenance.started()
+    try:
+        run_service()
+    finally:
+        try:
+            from resources.lib import radio_visualisation
+            radio_visualisation.stop_monitor()
+        except Exception:
+            pass
+        update_maintenance.finished()

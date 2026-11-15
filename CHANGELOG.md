@@ -1,6 +1,123 @@
 # Changelog
 
-## [Unreleased]
+## [2026.11.01.1] - 2026-11-01 (Release)
+
+- Stabiler Release auf Basis der geprüften Nightly 2026.10.30.2; spätere Nightly-Erweiterungen bleiben im Nightly-Kanal.
+- xVAULT-Visuals für Kodi 21 / Android ARM32 und ARM64 sowie Kodi 22 / Windows 64 Bit: sieben Modi mit dem xVAULT-Neon-Radio-Schriftzug, automatische Auswahl passender Plattformpakete und verlässliches Nachladen bei der Erstinstallation.
+- Synchronisation: Anmeldung dauerhaft speichern, Status und letzten Abgleich korrekt anzeigen; offene Löschkonflikte blockieren den Geräteabgleich nicht mehr.
+- Quellensuche: eingestelltes Zeitlimit tatsächlich einhalten. Filmidentität über Anbieter-IDs und Jahr prüfen, widersprüchliche Treffer verwerfen und unbestätigte Quellen nur zur bewussten manuellen Auswahl anbieten.
+- OHA-Anfragen mit HTTPS-Prüfung, begrenzter Antwortgröße und Zeitbudget; Radio kann vollständig deaktiviert werden. Gespeicherte Einstellungen und Favoriten bleiben erhalten.
+- Enthält weiterhin Radio Browser mit deutschen Sendern, Senderfamilien, Genres, Votes und Dublettenerkennung sowie die übersichtliche Werkzeuge-Neugliederung.
+
+## [2026.10.30.2] - 2026-10-30 (Nightly)
+
+- Visuals-Einstellung um Android / Fire OS ergänzt. Eigenes Android-ARM64-Paket für Kodi 21; die Prozessarchitektur entscheidet auch bei 32-Bit-Kodi auf einem 64-Bit-Kernel.
+- Alle sieben Modi mit dem Neon-Radio-Schriftzug im ARM64-Build; automatische optionale Installation aus dem passenden Plattformindex.
+- Nach der Erstinstallation werden die von Kodi deklarierten Python-Modulpfade einschließlich transitiver Abhängigkeiten auch im laufenden Dienst verfügbar gemacht. Das verhindert dessen Abbruch durch fehlende Importe unmittelbar nach dem automatischen Nachladen.
+
+## [2026.10.29.3] - 2026-10-29 (Nightly)
+
+- Freigegebener xVAULT-Schriftzug mit diagonalem Neon-Radio in allen sieben Visuals, einschließlich Pastelllinien.
+- Native Visualisierung für Kodi 21 / Android ARM32 (Fire OS), optimiert für volle Bildschirmauflösung; zusätzlich aktualisierter Windows-64-Bit-Build für Kodi 22.
+- Automatische Auswahl und Installation kompatibler Visuals-Pakete. Bestehende Pakete werden im Leerlauf anhand signierter Paketverweise und SHA-256 mit Sicherung und Rücksetzung aktualisiert.
+- Suchzeitlimit anhand tatsächlich verstrichener Zeit korrigiert.
+- Sync-Anmeldung dauerhaft speichern, Kodi-Einstellungen unmittelbar aktualisieren und letzten Sync-Zeitpunkt wiederherstellen. Offene Löschkonflikte mit leerem PHP-Patch blockieren Abgleich, Verlauf und Konfliktauswahl nicht mehr.
+
+## [2026.10.29.2] - 2026-10-29 (Nightly)
+
+- Zentrale Filmidentitätsprüfung: widersprüchliche Anbieter-IDs oder Erscheinungsjahre verwerfen; unbestätigte Treffer kennzeichnen und nur manuell mit Bestätigung abspielen. Autoplay und automatische Ersatzversuche verwenden bestätigte Filmquellen. Bei ausschließlich unbestätigten Treffern einmalig zur manuellen Auswahl wechseln, ohne die Standard-Aktion zu überschreiben.
+- Movie2k2 und Megakino prüfen mehrere gleichnamige Kandidaten. Filmpalast, Filmo, MoFlix, Movie2k sowie die ID-basierten OHA-/VIXSTREAM-Abfragen geben Identitätsnachweise an die gemeinsame Prüfung weiter. Neue Add-on-Version invalidiert alte Quellenlisten.
+- Einzelne falsch belegte Filmquellen können über das Quellen-Kontextmenü für 24 Stunden lokal ausgeblendet werden. Die Sperrdatei enthält nur Hashes und Ablaufzeiten.
+- OHA (ehemals Huhu) klar benannt und auch für alte Quellenkontexte abschaltbar. API-Abrufe ohne Antwortcache, mit expliziten Verbindungs-/Lesegrenzen, Antwortgrößenlimit, Zeitbudget für den Antwortkörper, Abbruchprüfung und HTTPS-Verifikation. Fehlergruppen DNS, HTTP, TLS, Timeout und Antwortformat getrennt protokollieren; bei API-Fehlern weitere OHA-Versuche vorübergehend aussetzen.
+- Neuer Schalter „Radio aktivieren“: Menü und direkte Radioaufrufe abschalten, Hintergrund-Netzwerkprüfungen aussetzen sowie automatische Visualisierung und deren automatische Installation unterbinden. Favoriten und lokale Vorgaben erhalten; Aktivierung ohne Änderung globaler Kodi-Einstellungen.
+
+## [2026.10.28.2] - 2026-10-28 (Nightly)
+
+- Radio-Senderlisten funktionieren auch bei leerer Kodi-Favoritenverwaltung. JSON `null` wird als leere Liste behandelt; vorhandene Radiofavoriten bleiben unverändert erhalten.
+- Unerwartete Radiofehler protokollieren die Aufrufstellen statt nur den Fehlertyp, ohne möglicherweise sensible Fehlerwerte auszugeben.
+- Nightly-Downloadlink auf der Repository-Seite auf das richtige Nightly-Paket korrigiert; Release-Kanal bleibt bei 2026.10.28.1.
+
+## [2026.10.27.3] - 2026-10-27 (Nightly)
+
+- Radio-Menüs beschleunigt: vorbereiteten Sender-, Familien- und Genreindex wiederverwenden und gezielt bei geänderten oder abgelaufenen Daten erneuern. Netzwerkbibliothek erst bei tatsächlichen Abrufen laden.
+- Kodis Offscreen-ListItems und Verzeichnis-Cache für Übersichten nutzen. Große Senderlisten zeigen 250 Sender pro Seite; Sortierung und Filter bleiben beim Blättern erhalten. Favoriten und Verlauf bleiben dynamisch.
+- Bei API-Ausfällen kurze Wartezeit vor dem nächsten Versuch statt neuer Netzabfragen bei jedem Menüwechsel. Erreichbarkeitsprüfung vor Wiedergabe und maximale Offline-Datenlaufzeit bleiben erhalten.
+- Lokal gemessen: Senderfamilien etwa 1,6 statt 5,9 Sekunden; Gesamtliste etwa 3,1 Sekunden je Seite statt 33 Sekunden für alle Einträge. Rücksprung und Audiowiedergabe live geprüft; 98 Tests erfolgreich.
+
+## [2026.10.27.2] - 2026-10-27 (Nightly)
+
+- Neuer Radio-Bereich mit Radio Browser: deutsche Sender nach Genre und Senderfamilie, kombinierbare Suche sowie Sortierung nach Votes, Name oder Bitrate. Kein Verified-Filter; letzter Streamcheck muss positiv sein.
+- Kodis Audioplayer, Musik-Metadaten, Bildcache, Dialoge, Einstellungen und zentrale Favoriten; gerätelokaler Hörverlauf und MP3-/AAC-Vorgabe. Öffentliche Votes nur nach Bestätigung, ohne automatischen Wiederholungsversuch.
+- Mehrstufige Dublettenerkennung für identische URLs, bestätigte Weiterleitungsziele und Qualitätsvarianten. Bekannte Spartensender bleiben getrennt; alte Favoriten-IDs bleiben nutzbar und Votes werden nicht addiert.
+- Begrenzte Hintergrundprüfung mit Zielcache; Senderlisten warten nicht auf Streamprüfungen. Lokaler Kodi-Livetest einschließlich „80s80s“ / „80s80s Radio“, Favoriten und Wiedergabe erfolgreich. 88 Regressionstests bestanden.
+
+## [2026.10.26.1] - 2026-10-26 (Release)
+
+- Die Korrekturen aus Nightly 2026.10.26.3 sind jetzt im Release enthalten: VIXSTREAM-HLS-Schluesselheader, automatische Vorwaertsupdates bei Kanalwechseln und erneuter Cacheabgleich nach einer Installation.
+- Der zusaetzliche Attestierungshinweis im Statusdialog wurde entfernt.
+- Die bereits kurzzeitig verwendete Versionsnummer 2026.10.26.1 wird auf ausdruecklichen Wunsch erneut verwendet. Fruehere Installationen derselben Nummer benoetigen bei abweichendem Paketstand eine bestaetigte Reparatur.
+
+## [2026.10.26.3] - 2026-10-26 (Nightly)
+
+- Automatische Updates behandeln eine hoehere Version im ausgewaehlten Kanal als Vorwaertsupdate, auch beim Wechsel zwischen Release und Nightly. Echte Rueckwechsel und Reparaturen bleiben bestaetigungspflichtig. Nach einer Installation wird eine fuer die vorherige Version gespeicherte Updateentscheidung neu geprueft. Lokale Kodi-Pruefung: `tools/diagnostics/AUTO_UPDATE_CHANNEL_2026-10-26.md`.
+
+- Der zusaetzliche Attestierungshinweis wurde aus dem Original-/Supportstatus entfernt.
+
+## [2026.10.26.2] - 2026-10-26 (Nightly)
+
+- VIXSTREAM: Wiedergabe-Header werden versionsgerecht auch beim separaten HLS-Schlüsselabruf übergeben. Das behebt den mit Kodi 21.3 / InputStream Adaptive 21.5.25 reproduzierten HTTP-403-Abbruch bei „Die Monkees“.
+
+## [2026.10.24.1] - 2026-10-24
+
+- Neue Domain `https://xvault.repowork.de/`, signierte Release-/Nightly-Kanaele, SHA-256-Originalpruefung und KodiBox-/Supportstatus. Updatechecks im Hintergrund, sichere Paketvorbereitung und gesicherte Kanal-Rueckwechsel.
+- MoFlix ersetzt fehlende Titel nicht mehr durch gleichnamige Filme mit abweichender IMDb-ID bzw. deutlich anderem Jahr. Das verhindert bei „Colony (2026)“ unter anderem Quellen zu „The Colony (2013)“. Die Anbieterrevision invalidiert alte Quellenlisten; acht neue Regressionstests sichern den Abgleich ab. Diagnose: `tools/diagnostics/COLONY_2026-10-24.md`.
+- VIXSTREAM kennzeichnet HLS ohne Sprachkennung nicht mehr fälschlich als Deutsch/Englisch. Auch untergeordnete Playlists werden geprüft; defekte Listen werden verworfen und die Qualität wird aus dem Manifest gelesen. Alte VIXSTREAM-Quellenlisten werden durch eine Anbieterrevision im Cache ungültig.
+- VIXSTREAM erhält die Wiedergabe-Header beim ersten Kodi-Zugriff auch auf `vixsrc.to` und Ersatzdomains. Diagnose und lokale Wiedergabeprüfung: `tools/diagnostics/VIXSTREAM_MONKEES_2026-10-24.md`.
+
+## [2026.10.23.1] - 2026-10-23
+
+- Bereits vom Anbieter aufgelöste, endungslose Direktstreams werden nicht erneut als Hoster-Link aufgelöst und verworfen. Das repariert unter anderem Einschalten/vide0.net bei „The Adam Project“.
+- Die Stream-Prüfung verwendet einen kleinen GET-Abruf mit Inhaltsprüfung. Fehlende HEAD-Unterstützung verhindert keine gültigen Streams; HTML-/Werbeweiterleitungen hinter vermeintlichen Video-/HLS-Adressen werden abgewiesen, damit die vorhandene Ersatzquellen-Suche fortfahren kann.
+- Zusätzliche Regressionstests für Direktstreams, echte HLS-Inhalte, HTML-Zwischenseiten, gelöschte Dateien, Range-Ablehnung und erhaltene Wiedergabe-Header. Diagnose und Kodi-Prüfung in `tools/diagnostics/ADAM_PROJECT_2026-10-23.md`.
+
+- Hauptmenü und Rückkehr aus der Film-/Seriensuche warten nicht mehr auf den Geräteabgleich. Ein kontogebundener Auftrag an den Hintergrunddienst erhält die aktive Gerätenutzung; auch Aufwachen blockiert nicht mehr den Monitor-Callback.
+- Bereits angewendete Wiedergabe-/Gesehen-Stände werden übersprungen. Neue oder geänderte Einträge verwenden eine gemeinsame Playcount-Transaktion und einen gemeinsamen Bookmark-Schreibvorgang. Lokale Änderungen, konkurrierende Wiedergaben und während laufender Videos zurückgestellte Updates bleiben geschützt.
+- Status- und Fortsetzen-Abfragen lesen die Sync-Datenbank ohne Schreibsperre; unveränderte Zustandsdaten werden nicht erneut gespeichert.
+- Auf einem echten Fire-TV-Stick geprüft: Zurück aus der Filmsuche rund 2,2 statt 26–29 Sekunden, aus der Seriensuche rund 2,3 statt 15 Sekunden. Details in `tools/diagnostics/FIRETV_SYNC_PERFORMANCE_2026-10-23.md`.
+- Repository-Page, Handbuch, Kodi-Index und Download-Pakete aktualisiert.
+
+## [2026.10.22.1] - 2026-10-22
+
+- LiveTV an die neue OHA-API angepasst: GET-Katalog und -Auflösung unter `/live/`, neuer Sendertyp, Deutschlandfilter, EPG-Kennungen und Domain-Fallback auch bei HTTP 404. Alte Caches werden gesichert und durch kompatible Senderlisten ersetzt; der alte Signatur-Ping entfällt.
+- Lokal im installierten Kodi geprüft: ZDF HD und Pro7 MAXX spielen wieder; M3U/XMLTV wurden neu erstellt und ZDF HD funktioniert auch über die Kodi-TV-Integration. Details in `tools/diagnostics/LIVETV_OHA_2026-10-22.md`.
+- Geräteabgleich mit getrennten Anmeldungen, Geräteübersicht, Änderungsprotokoll, dauerhafter Offline-Warteschlange und serverseitiger Konfliktprüfung für Favoriten, Gesehen-Status und Wiedergabestände.
+- Gerätewechsel übernehmen den bestätigten Kontostand. Konkurrierende Wiedergaben behalten ihre Alternativen; eine bewusste Auswahl schützt vor verspäteten Zwischenständen alter Sitzungen.
+- Wiedergabe und manuelle Gesehen-/Ungesehen-Markierungen verwenden dieselben normalisierten Inhaltsschlüssel. Bestehende Serverstände werden beim ersten Geräteabgleich übernommen.
+- Sync-API und Plugin gemeinsam aktualisiert. Alle beteiligten Geräte benötigen die neue Plugin-Version. 47 automatisierte Tests einschließlich echter MariaDB-Konkurrenzprüfung bestanden; lokale Kodi-Prüfungen sind in `tools/diagnostics/DEVICE_SYNC_2026-10-20.md` dokumentiert.
+- Repository-Page, Handbuch, Kodi-Index und Download-Pakete aktualisiert.
+
+## [2026.10.20.1] - 2026-10-20
+
+- SerienStream uebernimmt generische "Provider"-Eintraege nicht mehr als abspielbare Hoster.
+- SerienStream verwendet Upload-Daten nicht mehr zur Episodenzuordnung. Titelabgleiche muessen eindeutig sein; nur englisch verfuegbare Folgen werden nicht mehr durch fruehere deutsche Folgen ersetzt.
+- Der Providercheck im Hintergrunddienst beachtet dieselbe DNS-over-HTTPS-Einstellung wie die Quellensuche. Voruebergehende Netzwerkfehler sperren Anbieter nicht mehr dauerhaft.
+- Live im lokalen Kodi 22 RC1 geprueft: Slow Horses S5E1-6 und FBI S8E18-22 liefern die richtigen Quellen; Slow Horses S5E1 und FBI S8E18 starten ueber VOE.
+- Repository-Seite, Kodi-Index, Add-on-ZIP und Download-Archiv auf 2026.10.20.1 aktualisiert.
+
+## [2026.10.11.1] - 2026-10-11
+
+- Favoriten-Sync repariert die sichtbare "Letzte Synchronisation"-Anzeige aus dem echten lokalen Sync-Status, wenn der eigentliche Favoritenabgleich bereits erfolgreich war.
+- Manuelle Favoriten-Synchronisation meldet API-Anmeldefehler nicht mehr als Erfolg und entfernt abgelehnte Zugangsdaten sauber.
+- LiveTV/LiveTV lite erzwingen bei FFmpeg Direct keinen Timeshift-Modus mehr, damit Fire-TV-Installationen nicht an einem nicht beschreibbaren Timeshift-Pufferpfad abbrechen.
+- Live am installierten Fire-TV-Kodi geprueft: Favoriten-Sync aktualisiert den Zeitstempel, und `LiveTV lite > Deutsche TV > Pro7` startet und bleibt aktiv.
+- Repository-Seite, Kodi-Index, Add-on-ZIP und Download-Archiv wurden auf 2026.10.11.1 aktualisiert.
+
+## [2026.10.10.1] - 2026-10-10
+
+- SerienStream-/VOE-Quellen mit kurzlebigen `serienstream.to/r`-Weiterleitungen werden nicht mehr aus dem Quellen-Cache wiederverwendet oder erneut gespeichert.
+- Der Resolver bricht sauber ab, wenn SerienStream keinen Redirect mehr liefert, statt VOE mit einer ungueltigen `None`-URL aufzurufen.
+- Live am installierten Fire-TV-Kodi geprueft: Die Logs fuer Phineas und Ferb zeigen den alten Cache-/Redirect-Fehler; der Fix wurde in Kodi eingespielt und die temporaeren SerienStream-Hoster-Sperren wurden entfernt.
+- Repository-Seite, Kodi-Index, Add-on-ZIP und Download-Archiv wurden auf 2026.10.10.1 aktualisiert.
 
 ## [2026.10.01.1] - 2026-10-01
 

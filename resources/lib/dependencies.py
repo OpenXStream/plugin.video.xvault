@@ -4,6 +4,7 @@ import json
 import os
 import re
 import sys
+import struct
 import time
 import zipfile
 import xml.etree.ElementTree as ET
@@ -69,6 +70,11 @@ REQUIRED_EXTERNAL_ADDONS = set([
 ])
 AUTO_INSTALL_OPTIONAL_EXTERNALS = set([
     'script.module.download-m3u8',
+])
+# Native xVAULT renderer. Kodi chooses its platform/ABI package;
+# unlike Python dependencies, it must never use an external ZIP fallback.
+AUTO_INSTALL_VISUALIZATIONS = set([
+    'visualization.xvault',
 ])
 # Binary inputstream add-ons are platform packages. Some Kodi builds, for
 # example webOS ports, cannot provide every package. They remain optional and
@@ -146,6 +152,7 @@ def ensure_all_dependencies():
             _install_addon(addon_id, version)
 
         _enable_addons([addon_id for addon_id, optional, version in installable])
+        _refresh_python_module_paths([addon_id for addon_id, optional, version in installable])
 
         still_missing = [
             addon_id
@@ -156,7 +163,9 @@ def ensure_all_dependencies():
 
         if still_missing:
             _log('Missing dependencies after install: %s' % ', '.join(still_missing), xbmc.LOGWARNING)
-            _notify('Abhängigkeiten fehlen: %s' % ', '.join(still_missing[:3]), 'WARNING', 7000)
+            visible_missing = [a for a in still_missing if a not in AUTO_INSTALL_VISUALIZATIONS]
+            if visible_missing:
+                _notify('Abhängigkeiten fehlen: %s' % ', '.join(visible_missing[:3]), 'WARNING', 7000)
 
         success = len(missing_required) == 0
         if success:
@@ -179,10 +188,45 @@ def install_addon(addon_id, min_version=None):
 
         _enable_addons([addon_id])
         _refresh_addons()
+        _refresh_python_module_paths([addon_id])
         return _has_addon(addon_id, min_version)
     except Exception as e:
         _log('On-demand install failed for %s: %s' % (addon_id, str(e)), xbmc.LOGERROR)
         return False
+
+
+def _refresh_python_module_paths(addon_ids):
+    """Expose modules installed after Kodi created this Python interpreter.
+
+    Kodi supplies paths at interpreter startup. Its installer stays responsible
+    for packages; read installed module manifests for their declared libraries.
+    """
+    import importlib
+    import xbmcaddon
+    pending, visited = list(addon_ids), set()
+    while pending:
+        addon_id = pending.pop()
+        if addon_id in visited or not addon_id.startswith('script.module.'):
+            continue
+        visited.add(addon_id)
+        try:
+            addon = xbmcaddon.Addon(addon_id)
+            base = os.path.realpath(_translate_path(addon.getAddonInfo('path')))
+            root = ET.parse(os.path.join(base, 'addon.xml')).getroot()
+            if root.get('id') != addon_id:
+                continue
+            module = root.find("extension[@point='xbmc.python.module']")
+            if module is None:
+                continue
+            library = os.path.realpath(os.path.join(base, module.get('library', 'lib')))
+            if os.path.commonpath([base, library]) != base:
+                continue
+            if os.path.isdir(library) and library not in sys.path:
+                sys.path.append(library)
+            pending.extend(node.get('addon', '') for node in root.findall('./requires/import'))
+        except (OSError, ValueError, RuntimeError, ET.ParseError):
+            continue
+    importlib.invalidate_caches()
 
 
 def _dependencies_from_manifest():
@@ -208,6 +252,9 @@ def _unique_dependencies(dependencies):
         if addon_id in seen:
             continue
         seen.add(addon_id)
+        if addon_id in AUTO_INSTALL_VISUALIZATIONS:
+            from resources.lib.native_visuals import required_version
+            version = required_version(xbmc) or version
         result.append((addon_id, optional, version))
     return result
 
@@ -217,15 +264,26 @@ def _is_required(addon_id, optional):
 
 
 def _should_install(addon_id, optional):
+    if addon_id in AUTO_INSTALL_VISUALIZATIONS:
+        import xbmcaddon
+        if xbmcaddon.Addon('plugin.video.xvault').getSetting('radio.enabled') == 'false':
+            return False
+    if addon_id in AUTO_INSTALL_VISUALIZATIONS and not native_visuals_supported():
+        return False
     if optional and addon_id in SKIP_OPTIONAL_INSTALL:
         return False
     if optional and addon_id in OPTIONAL_BINARY_ADDONS:
         return False
-    if addon_id in REQUIRED_EXTERNAL_ADDONS or addon_id in AUTO_INSTALL_OPTIONAL_EXTERNALS:
+    if addon_id in REQUIRED_EXTERNAL_ADDONS or addon_id in AUTO_INSTALL_OPTIONAL_EXTERNALS or addon_id in AUTO_INSTALL_VISUALIZATIONS:
         return True
     if optional and not INSTALL_OPTIONAL:
         return False
     return True
+
+
+def native_visuals_supported():
+    from resources.lib.native_visuals import profile
+    return bool(profile(xbmc))
 
 
 def _addon_version(addon_id):
@@ -264,6 +322,15 @@ def _install_addon(addon_id, min_version=None):
     if _has_addon(addon_id, min_version):
         return True
 
+    if addon_id in AUTO_INSTALL_VISUALIZATIONS:
+        if not _native_package_available(min_version):
+            _log('No compatible native visualizer currently reachable; optional install skipped', xbmc.LOGINFO)
+            return False
+        if _addon_version(addon_id):
+            return _update_native_visuals(min_version)
+        _ensure_native_repository()
+        _refresh_addons()  # Pick up the companion package before its first installation.
+
     if addon_id in EXTERNAL_ADDON_SOURCES:
         if _install_external_addon(addon_id, min_version):
             return True
@@ -272,12 +339,127 @@ def _install_addon(addon_id, min_version=None):
     return _install_addon_from_kodi(addon_id, min_version)
 
 
+def _ensure_native_repository():
+    from resources.lib import repository
+    repository.ensure_xvault_repository()
+
+
+def _native_package_available(min_version=None):
+    from resources.lib.native_visuals import profile
+    from resources.lib.release_security import BASE_URL
+    selected = profile(xbmc)
+    if not selected:
+        return False
+    try:
+        with urlopen(BASE_URL + 'updates/native/' + selected + '/addons.xml', timeout=5) as response:
+            root = ET.fromstring(response.read(256 * 1024))
+        node = root.find("addon[@id='visualization.xvault']")
+        if node is None or node.find("./extension[@point='xbmc.addon.metadata']/platform").text != selected.split('/')[0]:
+            return False
+        dependency = node.find("./requires/import[@addon='kodi.binary.instance.visualization']")
+        expected_api = '4.0.0' if selected.endswith('/kodi21') else '5.0.0'
+        if dependency is None or dependency.get('version') != expected_api:
+            return False
+        return not min_version or _compare_versions(node.get('version', ''), min_version) >= 0
+    except Exception:
+        return False
+
+
+def _native_descriptor(min_version=None):
+    from resources.lib import release_security as security
+    from resources.lib.native_visuals import profile
+    selected = profile(xbmc)
+    if not selected:
+        raise DependencyError('Unsupported native profile')
+    base = security.BASE_URL + 'updates/native/' + selected + '/'
+    with urlopen(base + 'native.json', timeout=5) as response:
+        data = security.verify_envelope(json.loads(response.read(256 * 1024)))
+    if (data.get('schema') != 1 or data.get('kind') != 'native-addon' or
+            data.get('addon_id') != 'visualization.xvault' or data.get('profile') != selected or
+            not re.fullmatch(r'visualization\.xvault/visualization\.xvault-[0-9.]+\.zip', str(data.get('package', ''))) or
+            not re.fullmatch(r'[0-9a-f]{64}', str(data.get('sha256', ''))) or
+            not 0 < int(data.get('size', 0)) < 32 * 1024 * 1024 or
+            (min_version and _compare_versions(data.get('version', ''), min_version) < 0)):
+        raise DependencyError('Invalid native package reference')
+    return data, base + data['package']
+
+
+def _update_native_visuals(min_version=None):
+    # Kodi's InstallAddon builtin returns early when an add-on is installed.
+    # Replace a verified native package only while its player is not in use.
+    if xbmc.getCondVisibility('Player.HasMedia'):
+        _log('Native visualizer update deferred until a later idle startup', xbmc.LOGINFO)
+        return False
+    import uuid
+    import shutil
+    from resources.lib import release_security as security
+    from resources.lib.native_visuals import profile
+    stage = backup = target = temp_zip = ''
+    moved_old = moved_new = False
+    try:
+        reference, url = _native_descriptor(min_version)
+        temp_zip = _dependency_temp_path(url)
+        _download_file(url, temp_zip)
+        if os.path.getsize(temp_zip) != reference['size'] or security.sha256_file(temp_zip) != reference['sha256']:
+            raise DependencyError('Native package checksum mismatch')
+        parent = os.path.realpath(_translate_path('special://home/addons/'))
+        target = os.path.join(parent, 'visualization.xvault')
+        stage = os.path.join(parent, '.xvault-native-stage-' + uuid.uuid4().hex)
+        backup = os.path.join(parent, '.xvault-native-backup-' + uuid.uuid4().hex)
+        with zipfile.ZipFile(temp_zip) as archive:
+            node = ET.fromstring(archive.read('visualization.xvault/addon.xml'))
+            selected = profile(xbmc)
+            api = node.find("./requires/import[@addon='kodi.binary.instance.visualization']")
+            platform_node = node.find("./extension[@point='xbmc.addon.metadata']/platform")
+            if (node.get('id') != reference['addon_id'] or node.get('version') != reference['version'] or
+                    platform_node is None or platform_node.text != selected.split('/')[0] or api is None or
+                    api.get('version') != ('4.0.0' if selected.endswith('/kodi21') else '5.0.0')):
+                raise DependencyError('Native package ABI mismatch')
+            _mkdir(stage)
+            for entry in archive.infolist():
+                name = _normalize_zip_name(entry.filename)
+                if not name.startswith('visualization.xvault/') or (entry.external_attr >> 16) & 0o170000 == 0o120000:
+                    raise DependencyError('Unsafe native package entry')
+                relative = name[len('visualization.xvault/'):]
+                if not relative or name.endswith('/'):
+                    continue
+                destination = _safe_join(stage, relative)
+                _mkdir(os.path.dirname(destination))
+                with archive.open(entry) as source, open(destination, 'wb') as output:
+                    shutil.copyfileobj(source, output)
+        if xbmc.getCondVisibility('Player.HasMedia'):
+            return False
+        xbmc.executeJSONRPC(json.dumps(dict(jsonrpc='2.0', id=1, method='Addons.SetAddonEnabled', params={'addonid':'visualization.xvault','enabled':False})))
+        os.replace(target, backup); moved_old = True
+        os.replace(stage, target); moved_new = True
+        os.replace(os.path.join(backup, 'addon.xml'), os.path.join(backup, 'addon.xml.restore'))
+        _refresh_addons(); _enable_addons(['visualization.xvault'])
+        if not _wait_for_addon('visualization.xvault', reference['version'], timeout=10):
+            raise DependencyError('Updated native package not registered')
+        return True
+    except Exception as exc:
+        _log('Native visualizer update failed: ' + type(exc).__name__, xbmc.LOGWARNING)
+        if moved_new:
+            os.replace(target, stage)
+        if moved_old:
+            retired = os.path.join(backup, 'addon.xml.restore')
+            if os.path.exists(retired):
+                os.replace(retired, os.path.join(backup, 'addon.xml'))
+            os.replace(backup, target)
+            _refresh_addons(); _enable_addons(['visualization.xvault'])
+        return False
+    finally:
+        if stage and os.path.isdir(stage) and os.path.dirname(os.path.realpath(stage)) == os.path.realpath(os.path.dirname(target)) and os.path.basename(stage).startswith('.xvault-native-stage-'):
+            shutil.rmtree(stage)
+        if temp_zip and os.path.isfile(temp_zip):
+            os.remove(temp_zip)
+
+
 def _install_addon_from_kodi(addon_id, min_version=None, timeout=INSTALL_TIMEOUT):
     _log('Installing dependency: %s' % addon_id, xbmc.LOGINFO)
-    try:
-        xbmc.executebuiltin('InstallAddon(%s)' % addon_id, True)
-    except TypeError:
-        xbmc.executebuiltin('InstallAddon(%s)' % addon_id)
+    # InstallAddon may open a modal confirmation. Waiting for the builtin here
+    # blocks its calling script before that confirmation can be handled.
+    xbmc.executebuiltin('InstallAddon(%s)' % addon_id)
 
     _accept_install_dialog()
     if _wait_for_addon(addon_id, min_version, timeout):
